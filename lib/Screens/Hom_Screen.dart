@@ -104,7 +104,10 @@ class _HomepageState extends State<Homepage> {
                               Icons.settings,
                               size: 50,
                             )),
-                        Text('settings')
+                        Text(
+                          'settings',
+                          style: TextStyle(color: Colors.black),
+                        )
                       ],
                     ),
                   ),
@@ -126,7 +129,10 @@ class _HomepageState extends State<Homepage> {
                               Icons.share,
                               size: 50,
                             )),
-                        Text('share')
+                        Text(
+                          'share',
+                          style: TextStyle(color: Colors.black),
+                        )
                       ],
                     ),
                   ),
@@ -148,7 +154,10 @@ class _HomepageState extends State<Homepage> {
                               Icons.email,
                               size: 50,
                             )),
-                        Text('email')
+                        Text(
+                          'email',
+                          style: TextStyle(color: Colors.black),
+                        )
                       ],
                     ),
                   ),
@@ -175,7 +184,10 @@ class _HomepageState extends State<Homepage> {
                               Icons.person,
                               size: 50,
                             )),
-                        Text('about'),
+                        Text(
+                          'about',
+                          style: TextStyle(color: Colors.black),
+                        ),
                       ],
                     ),
                   )
@@ -185,7 +197,15 @@ class _HomepageState extends State<Homepage> {
             SizedBox(
               height: 15,
             ),
-            Card(child: Text('$Facultyname  Faculty')),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Text(
+                  '$Facultyname  Faculty',
+                  style: TextStyle(fontSize: 23),
+                ),
+              ),
+            ),
             Expanded(
               child: ListView.builder(
                 itemCount: departments.length,
@@ -194,9 +214,12 @@ class _HomepageState extends State<Homepage> {
                     child: ListTile(
                       onTap: () {
                         Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => Departmentpage()));
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Departmentpage(
+                                departmentName: departments[index]),
+                          ),
+                        );
                       },
                       title: Text(departments[index]),
                       trailing: Row(
