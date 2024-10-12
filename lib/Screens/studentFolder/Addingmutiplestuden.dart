@@ -17,7 +17,13 @@ class AddMultipleStudentsPage extends StatefulWidget {
 class _AddMultipleStudentsPageState extends State<AddMultipleStudentsPage> {
   TextEditingController studentNameController = TextEditingController();
   TextEditingController studentIdController = TextEditingController();
-  TextEditingController studentSemesterController = TextEditingController();
+
+  // Variable to hold the selected semester
+  String? selectedSemester;
+
+  // List of semesters
+  List<String> semesters = ['1', '2', '3', '4', '5', '6', '7', '8'];
+
   List<Map<String, String>> newStudents = [];
 
   // Add a student to the temporary list
@@ -27,7 +33,7 @@ class _AddMultipleStudentsPageState extends State<AddMultipleStudentsPage> {
     });
     studentNameController.clear();
     studentIdController.clear();
-    studentSemesterController.clear();
+    selectedSemester = null; // Reset the dropdown after adding a student
   }
 
   // Save all students to SharedPreferences
@@ -72,9 +78,20 @@ class _AddMultipleStudentsPageState extends State<AddMultipleStudentsPage> {
               ),
             ),
             Card(
-              child: TextField(
-                controller: studentSemesterController,
-                decoration: InputDecoration(hintText: 'Student Semester'),
+              child: DropdownButtonFormField<String>(
+                value: selectedSemester,
+                hint: Text('Select Semester'),
+                items: semesters.map((String semester) {
+                  return DropdownMenuItem<String>(
+                    value: semester,
+                    child: Text(semester),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    selectedSemester = newValue;
+                  });
+                },
               ),
             ),
             SizedBox(height: 10),
@@ -82,9 +99,9 @@ class _AddMultipleStudentsPageState extends State<AddMultipleStudentsPage> {
               onPressed: () {
                 if (studentNameController.text.isNotEmpty &&
                     studentIdController.text.isNotEmpty &&
-                    studentSemesterController.text.isNotEmpty) {
+                    selectedSemester != null) {
                   _addStudentLocally(studentNameController.text,
-                      studentIdController.text, studentSemesterController.text);
+                      studentIdController.text, selectedSemester!);
                 }
               },
               child: Text('Add Another'),

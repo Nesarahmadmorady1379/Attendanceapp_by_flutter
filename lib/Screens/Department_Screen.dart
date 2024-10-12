@@ -27,8 +27,11 @@ class _DepartmentpageState extends State<Departmentpage> {
           child: Column(children: [
             GestureDetector(
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => Attendancepage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => Attendancepage(
+                            departmentName: widget.departmentName)));
               },
               child: Container(
                 height: 200,

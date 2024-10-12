@@ -10,13 +10,18 @@ class AddoneStudentPage extends StatefulWidget {
       : super(key: key);
 
   @override
-  _AddStudentPageState createState() => _AddStudentPageState();
+  _AddoneStudentPageState createState() => _AddoneStudentPageState();
 }
 
-class _AddStudentPageState extends State<AddoneStudentPage> {
+class _AddoneStudentPageState extends State<AddoneStudentPage> {
   TextEditingController studentNameController = TextEditingController();
   TextEditingController studentIdController = TextEditingController();
-  TextEditingController studentSemesterController = TextEditingController();
+
+  // Variable to hold the selected semester
+  String? selectedSemester;
+
+  // List of semesters
+  List<String> semesters = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
   // Add a new student and save it to SharedPreferences
   void _addStudent(String name, String id, String semester) async {
@@ -60,9 +65,20 @@ class _AddStudentPageState extends State<AddoneStudentPage> {
               ),
             ),
             Card(
-              child: TextField(
-                controller: studentSemesterController,
-                decoration: InputDecoration(hintText: 'Student Semester'),
+              child: DropdownButtonFormField<String>(
+                value: selectedSemester,
+                hint: Text('Select Semester'),
+                items: semesters.map((String semester) {
+                  return DropdownMenuItem<String>(
+                    value: semester,
+                    child: Text(semester),
+                  );
+                }).toList(),
+                onChanged: (newValue) {
+                  setState(() {
+                    selectedSemester = newValue;
+                  });
+                },
               ),
             ),
             SizedBox(height: 10),
@@ -70,9 +86,9 @@ class _AddStudentPageState extends State<AddoneStudentPage> {
               onPressed: () {
                 if (studentNameController.text.isNotEmpty &&
                     studentIdController.text.isNotEmpty &&
-                    studentSemesterController.text.isNotEmpty) {
+                    selectedSemester != null) {
                   _addStudent(studentNameController.text,
-                      studentIdController.text, studentSemesterController.text);
+                      studentIdController.text, selectedSemester!);
                 }
               },
               child: Text('Save'),
