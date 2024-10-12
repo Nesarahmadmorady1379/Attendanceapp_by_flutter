@@ -18,7 +18,7 @@ class _DepartmentpageState extends State<Departmentpage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.departmentName} Page'),
+        title: Text('${widget.departmentName} Department'),
         backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
@@ -37,26 +37,32 @@ class _DepartmentpageState extends State<Departmentpage> {
                 child: Center(child: Text('Attendance')),
               ),
             ),
+            SizedBox(height: 20),
             SizedBox(
-              height: 20,
+              width: double.infinity,
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => StudentPage(
+                                departmentName: widget.departmentName)));
+                  },
+                  child: Text('Students')),
             ),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => Addingstudentpage()));
-                },
-                child: Text('Students')),
+            SizedBox(height: 20),
             SizedBox(
-              height: 20,
+              width: double.infinity,
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SubjectsPage(
+                                departmentName: widget.departmentName)));
+                  },
+                  child: Text('Subjects')),
             ),
-            ElevatedButton(
-                onPressed: () {
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (context) => SubjectsPage()));
-                },
-                child: Text('Subjects'))
           ]),
         ),
       ),

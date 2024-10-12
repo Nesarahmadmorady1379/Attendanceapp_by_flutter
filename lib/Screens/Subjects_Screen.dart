@@ -1,7 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SubjectsPage extends StatefulWidget {
-  const SubjectsPage({Key? key}) : super(key: key);
+  final String departmentName; // Added to hold the department name
+
+  const SubjectsPage({Key? key, required this.departmentName})
+      : super(key: key);
 
   @override
   _SubjectsPageState createState() => _SubjectsPageState();
@@ -10,24 +16,63 @@ class SubjectsPage extends StatefulWidget {
 class _SubjectsPageState extends State<SubjectsPage> {
   List<Map<String, String>> subjects = [];
 
-  // Adding subject to the list
+  @override
+  void initState() {
+    super.initState();
+    _loadSubjects();
+  }
+
+  // Load subjects from SharedPreferences for the specific department
+  void _loadSubjects() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? subjectsString =
+        prefs.getString('subjects_${widget.departmentName}');
+
+    if (subjectsString != null) {
+      try {
+        List<dynamic> decodedList = json.decode(subjectsString);
+        setState(() {
+          subjects = decodedList.map<Map<String, String>>((item) {
+            return Map<String, String>.from(item);
+          }).toList();
+        });
+      } catch (e) {
+        print('Error loading subjects: $e');
+        setState(() {
+          subjects = []; // Reset subjects to an empty list if there's an error
+        });
+      }
+    }
+  }
+
+  // Save subjects to SharedPreferences for the specific department
+  void _saveSubjects() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // Save the subjects list after encoding it into JSON
+    prefs.setString('subjects_${widget.departmentName}', json.encode(subjects));
+  }
+
+  // Adding a subject to the list
   void _addSubject(String name, String credit) {
     setState(() {
       subjects.add({'name': name, 'credit': credit});
+      _saveSubjects(); // Save to SharedPreferences after adding
     });
   }
 
-  // Editing subject in the list
+  // Editing a subject in the list
   void _editSubject(int index, String name, String credit) {
     setState(() {
       subjects[index] = {'name': name, 'credit': credit};
+      _saveSubjects(); // Save to SharedPreferences after editing
     });
   }
 
-  // Deleting subject from the list
+  // Deleting a subject from the list
   void _deleteSubject(int index) {
     setState(() {
       subjects.removeAt(index);
+      _saveSubjects(); // Save to SharedPreferences after deleting
     });
   }
 
@@ -35,7 +80,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Subjects Page'),
+        title: Text('${widget.departmentName} Subjects'),
         backgroundColor: Colors.blueAccent,
       ),
       body: ListView.builder(
@@ -51,7 +96,6 @@ class _SubjectsPageState extends State<SubjectsPage> {
                   _deleteSubject(index);
                 },
               ),
-              // When the ListTile is tapped, open the dialog to edit the subject
               onTap: () {
                 _showEditSubjectDialog(context, index);
               },
