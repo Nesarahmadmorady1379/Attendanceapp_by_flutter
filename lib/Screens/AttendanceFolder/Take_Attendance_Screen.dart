@@ -4,11 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TakeAttendancePage extends StatefulWidget {
+<<<<<<< HEAD
   final Map<String, dynamic>
       attendance; // Change to dynamic map to accept various data types
 
   const TakeAttendancePage({Key? key, required this.attendance})
       : super(key: key);
+=======
+  final Map<String, String> attendance; // Pass selected attendance details
+
+  TakeAttendancePage({required this.attendance});
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
 
   @override
   _TakeAttendancePageState createState() => _TakeAttendancePageState();
@@ -80,8 +86,12 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
                   title: Text(students[index]['name']),
                   subtitle: Text('ID: ${students[index]['id']}'),
                   trailing: Checkbox(
+<<<<<<< HEAD
                     value: students[index]['isPresent'] ??
                         false, // Default to false if not present
+=======
+                    value: students[index]['isPresent'],
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
                     onChanged: (value) {
                       setState(() {
                         students[index]['isPresent'] = value;

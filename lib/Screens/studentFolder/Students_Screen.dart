@@ -79,7 +79,11 @@ class _StudentPageState extends State<StudentPage> {
                   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                   child: Card(
                     child: ListTile(
+<<<<<<< HEAD
                       title: Text('Name: ${students[index]['name']!}'),
+=======
+                      title: Text(students[index]['name']!),
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
                       subtitle: Text(
                         'ID: ${students[index]['id']} | Semester: ${students[index]['semester']}',
                       ),

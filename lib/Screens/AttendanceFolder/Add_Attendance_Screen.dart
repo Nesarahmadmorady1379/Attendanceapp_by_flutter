@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -10,6 +11,11 @@ class AddAttendancePage extends StatefulWidget {
   const AddAttendancePage({Key? key, required this.departmentName})
       : super(key: key);
 
+=======
+import 'package:shared_preferences/shared_preferences.dart';
+
+class AddAttendancePage extends StatefulWidget {
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
   @override
   _AddAttendancePageState createState() => _AddAttendancePageState();
 }
@@ -21,10 +27,17 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
   DateTime? startDate;
   DateTime? endDate;
 
+<<<<<<< HEAD
   List<String> semesters = ['1', '2', '3', '4', '5', '6', '7', '8'];
   List<String> subjects = [];
   List<Map<String, String>> allStudents = [];
   List<Map<String, String>> filteredStudents = [];
+=======
+  List<String> departments = []; // Load from SharedPreferences
+  List<String> semesters = []; // Load from SharedPreferences
+  List<String> subjects = []; // Load from SharedPreferences
+  List<Map<String, String>> students = []; // Filtered students
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
 
   @override
   void initState() {
@@ -32,6 +45,7 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
     _loadData();
   }
 
+<<<<<<< HEAD
   // Load department, subjects, and students from SharedPreferences
   void _loadData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -103,6 +117,23 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
   }
 
   // Function to pick start date
+=======
+  void _loadData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      departments = prefs.getStringList('departments') ?? [];
+      semesters = prefs.getStringList('semesters') ?? [];
+      // Ensure that the decoded data is correctly cast to String
+      subjects = prefs
+              .getStringList('subjects')
+              ?.map((e) =>
+                  (jsonDecode(e) as Map<String, dynamic>)['name'] as String)
+              .toList() ??
+          [];
+    });
+  }
+
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
   void _pickStartDate() async {
     DateTime? date = await showDatePicker(
       context: context,
@@ -117,7 +148,10 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
     }
   }
 
+<<<<<<< HEAD
   // Function to pick end date
+=======
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
   void _pickEndDate() async {
     DateTime? date = await showDatePicker(
       context: context,
@@ -135,14 +169,33 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+<<<<<<< HEAD
       appBar: AppBar(
         title: Text('Add Attendance for ${widget.departmentName}'),
       ),
+=======
+      appBar: AppBar(title: Text('Add Attendance')),
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+<<<<<<< HEAD
             // Dropdown for semester selection
+=======
+            DropdownButtonFormField<String>(
+              value: selectedDepartment,
+              hint: Text('Select Department'),
+              items: departments.map((dept) {
+                return DropdownMenuItem(value: dept, child: Text(dept));
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedDepartment = value;
+                });
+              },
+            ),
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
             DropdownButtonFormField<String>(
               value: selectedSemester,
               hint: Text('Select Semester'),
@@ -152,6 +205,7 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
               onChanged: (value) {
                 setState(() {
                   selectedSemester = value;
+<<<<<<< HEAD
                   _filterStudents(); // Filter students when semester changes
                 });
               },
@@ -159,6 +213,11 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
             SizedBox(height: 10),
 
             // Dropdown for subject selection
+=======
+                });
+              },
+            ),
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
             DropdownButtonFormField<String>(
               value: selectedSubject,
               hint: Text('Select Subject'),
@@ -171,6 +230,7 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
                 });
               },
             ),
+<<<<<<< HEAD
             SizedBox(
               height: 5,
             ),
@@ -214,6 +274,24 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
             // Save attendance button
             ElevatedButton(
               onPressed: _saveAttendance,
+=======
+            ElevatedButton(
+              onPressed: _pickStartDate,
+              child: Text(startDate == null
+                  ? 'Select Start Date'
+                  : startDate!.toString()),
+            ),
+            ElevatedButton(
+              onPressed: _pickEndDate,
+              child: Text(
+                  endDate == null ? 'Select End Date' : endDate!.toString()),
+            ),
+            Spacer(),
+            ElevatedButton(
+              onPressed: () {
+                // Save the attendance record
+              },
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
               child: Text('Save Attendance'),
             ),
           ],

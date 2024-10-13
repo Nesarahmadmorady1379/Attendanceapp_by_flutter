@@ -18,7 +18,10 @@ dependencies:
   shared_preferences: ^2.3.2
   file_picker: ^8.1.2
   csv: ^6.0.0
+<<<<<<< HEAD
   intl: ^0.19.0
+=======
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
 
 dev_dependencies:
   flutter_test:

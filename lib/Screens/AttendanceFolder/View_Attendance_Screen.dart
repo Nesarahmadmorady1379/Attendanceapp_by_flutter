@@ -4,11 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ViewAttendancePage extends StatefulWidget {
+<<<<<<< HEAD
   final Map<String, dynamic>
       attendance; // Change to dynamic map to accept various data types
 
   const ViewAttendancePage({Key? key, required this.attendance})
       : super(key: key);
+=======
+  final Map<String, String> attendance; // Pass the selected attendance details
+
+  ViewAttendancePage({required this.attendance});
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
 
   @override
   _ViewAttendancePageState createState() => _ViewAttendancePageState();
@@ -33,11 +39,14 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
       setState(() {
         attendanceData = List<Map<String, dynamic>>.from(
             attendanceList.map((e) => jsonDecode(e)));
+<<<<<<< HEAD
         // Extract unique dates if needed (assuming they are part of the attendance structure)
         dates = attendanceData
             .map((student) => student['date'] as String)
             .toSet()
             .toList();
+=======
+>>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
       });
     }
   }
