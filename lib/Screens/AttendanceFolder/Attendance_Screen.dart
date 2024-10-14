@@ -130,7 +130,6 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Format the start and end dates using the intl package
                   Text(
                     DateFormat.yMd()
                         .format(DateTime.parse(attendance['startDate'])),
