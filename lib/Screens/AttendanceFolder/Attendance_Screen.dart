@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-<<<<<<< HEAD
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,25 +14,12 @@ class Attendancepage extends StatefulWidget {
   const Attendancepage({Key? key, required this.departmentName})
       : super(key: key);
 
-=======
-import 'package:attendanceapp/Screens/AttendanceFolder/Add_Attendance_Screen.dart';
-import 'package:attendanceapp/Screens/AttendanceFolder/Take_Attendance_Screen.dart';
-import 'package:attendanceapp/Screens/AttendanceFolder/View_Attendance_Screen.dart';
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-class Attendancepage extends StatefulWidget {
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
   @override
   _AttendanceOverviewPageState createState() => _AttendanceOverviewPageState();
 }
 
 class _AttendanceOverviewPageState extends State<Attendancepage> {
-<<<<<<< HEAD
   List<Map<String, dynamic>> attendances = [];
-=======
-  List<Map<String, String>> attendances = []; // Store attendance records
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
 
   @override
   void initState() {
@@ -41,34 +27,17 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
     _loadAttendances();
   }
 
-<<<<<<< HEAD
   // Load attendance data from SharedPreferences
-=======
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
   void _loadAttendances() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       try {
-<<<<<<< HEAD
         String? attendanceString =
             prefs.getString('attendance_${widget.departmentName}');
         if (attendanceString != null) {
           List<dynamic> attendanceList = json.decode(attendanceString);
           attendances =
               attendanceList.map((e) => Map<String, dynamic>.from(e)).toList();
-=======
-        List<String>? attendanceList = prefs.getStringList('attendances');
-        if (attendanceList != null) {
-          attendances = attendanceList.map((e) {
-            try {
-              // Try to decode the JSON string
-              return Map<String, String>.from(jsonDecode(e));
-            } catch (error) {
-              print('Error decoding attendance record: $e');
-              return <String, String>{}; // Return an empty map on error
-            }
-          }).toList();
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
         } else {
           attendances = [];
         }
@@ -79,7 +48,6 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
     });
   }
 
-<<<<<<< HEAD
   // Save updated attendance data back to SharedPreferences
   void _saveAttendances() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -88,15 +56,6 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
   }
 
   // Delete an attendance record
-=======
-  void _saveAttendances() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> attendanceList =
-        attendances.map((e) => jsonEncode(e)).toList();
-    prefs.setStringList('attendances', attendanceList);
-  }
-
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
   void _deleteAttendance(int index) {
     setState(() {
       attendances.removeAt(index);
@@ -104,10 +63,7 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
     });
   }
 
-<<<<<<< HEAD
   // Show options for each attendance (Take/View Attendance)
-=======
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
   void _showAttendanceOptionsDialog(int index) {
     showDialog(
       context: context,
@@ -119,46 +75,28 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
             children: [
               ElevatedButton(
                 onPressed: () {
-<<<<<<< HEAD
-=======
-                  // Handle "Take Attendance"
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
                   Navigator.of(context).pop();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-<<<<<<< HEAD
                       builder: (context) => TakeAttendancePage(
                         attendance: attendances[index], // Passing dynamic map
                       ),
                     ),
-=======
-                        builder: (context) =>
-                            TakeAttendancePage(attendance: attendances[index])),
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
                   );
                 },
                 child: Text('Take Attendance'),
               ),
               ElevatedButton(
                 onPressed: () {
-<<<<<<< HEAD
-=======
-                  // Handle "View Attendance"
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
                   Navigator.of(context).pop();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-<<<<<<< HEAD
                       builder: (context) => ViewAttendancePage(
                         attendance: attendances[index], // Passing dynamic map
                       ),
                     ),
-=======
-                        builder: (context) =>
-                            ViewAttendancePage(attendance: attendances[index])),
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
                   );
                 },
                 child: Text('View Attendance'),
@@ -173,7 +111,6 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-<<<<<<< HEAD
       appBar: AppBar(
         title: Text('${widget.departmentName} Attendances'),
       ),
@@ -215,45 +152,12 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
                 _showAttendanceOptionsDialog(index);
               },
             ),
-=======
-      appBar: AppBar(title: Text('Attendance Overview')),
-      body: ListView.builder(
-        itemCount: attendances.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Row(
-              children: [
-                Text(attendances[index]['department']!),
-                SizedBox(width: 10),
-                Text(attendances[index]['semester']!),
-              ],
-            ),
-            subtitle: Text(attendances[index]['subject']!),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(attendances[index]['startDate']!),
-                SizedBox(width: 10),
-                Text(attendances[index]['endDate']!),
-                IconButton(
-                  icon: Icon(Icons.delete),
-                  onPressed: () {
-                    _deleteAttendance(index);
-                  },
-                ),
-              ],
-            ),
-            onTap: () {
-              _showAttendanceOptionsDialog(index);
-            },
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-<<<<<<< HEAD
           // Navigate to the AddAttendancePage and wait for the result
           Navigator.push(
             context,
@@ -271,10 +175,6 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
               });
             }
           });
-=======
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => AddAttendancePage()));
->>>>>>> a34608d4e0bcdf2b87e2711bc3f26299c9a4fda7
         },
       ),
     );
