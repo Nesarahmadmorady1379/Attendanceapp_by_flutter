@@ -169,14 +169,26 @@ class _SubjectsPageState extends State<SubjectsPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(
-                controller: subjectNameController,
-                decoration: InputDecoration(hintText: 'Subject Name'),
+              Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: TextField(
+                  controller: subjectNameController,
+                  decoration: InputDecoration(
+                      label: Text('Subject Name'),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20)))),
+                ),
               ),
-              TextField(
-                controller: subjectCreditController,
-                decoration: InputDecoration(hintText: 'Subject Credit'),
-                keyboardType: TextInputType.number,
+              Padding(
+                padding: const EdgeInsets.all(5.0),
+                child: TextField(
+                  controller: subjectCreditController,
+                  decoration: InputDecoration(
+                      label: Text('Subject Credit'),
+                      border: OutlineInputBorder(
+                          borderRadius: BorderRadius.all(Radius.circular(20)))),
+                  keyboardType: TextInputType.number,
+                ),
               ),
             ],
           ),

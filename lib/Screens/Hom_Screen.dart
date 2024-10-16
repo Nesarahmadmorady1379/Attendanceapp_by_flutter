@@ -266,7 +266,10 @@ class _HomepageState extends State<Homepage> {
           title: Text('Add Department'),
           content: TextField(
             controller: departmentController,
-            decoration: InputDecoration(hintText: 'Enter department name'),
+            decoration: InputDecoration(
+                label: Text('Enter department name'),
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20)))),
           ),
           actions: [
             ElevatedButton(

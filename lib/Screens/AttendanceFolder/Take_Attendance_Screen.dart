@@ -27,14 +27,25 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
   // Load students for the specific attendance record
   void _loadStudents() {
     setState(() {
+      print('Attendance data: ${widget.attendance}');
+
       // Retrieve students directly from the attendance data
-      students = List<Map<String, dynamic>>.from(widget.attendance['students']);
+      students =
+          List<Map<String, dynamic>>.from(widget.attendance['students'] ?? []);
+
+      print('Loaded students: $students'); // Debugging: check loaded students
 
       // Ensure all students have an 'isPresent' field with a boolean value
       for (var student in students) {
-        student['isPresent'] =
-            student['isPresent'] == true || student['isPresent'] == 'true';
-        // This ensures 'true' string and bool true are converted to bool true.
+        // Initialize 'isPresent' to false if it doesn't exist
+        if (student['isPresent'] == null) {
+          student['isPresent'] = false; // Default value if not present
+        }
+        if (student['isPresent'] is String) {
+          // If it's a string, convert it to bool
+          student['isPresent'] = student['isPresent'].toLowerCase() == 'true';
+        }
+        // Now 'isPresent' is guaranteed to be a boolean
       }
     });
   }
@@ -46,7 +57,11 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
     }
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> attendanceData = students.map((e) => jsonEncode(e)).toList();
+    List<String> attendanceData = students.map((student) {
+      student['date'] = DateFormat('yyyy-MM-dd').format(currentDate!);
+      return jsonEncode(student);
+    }).toList();
+
     String formattedDate = DateFormat('yyyy-MM-dd').format(currentDate!);
     String attendanceKey =
         'attendance_${widget.attendance['department']}_${widget.attendance['semester']}_${widget.attendance['subject']}_$formattedDate';

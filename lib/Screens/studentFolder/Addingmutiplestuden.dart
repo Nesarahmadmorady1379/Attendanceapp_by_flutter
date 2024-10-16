@@ -65,22 +65,38 @@ class _AddMultipleStudentsPageState extends State<AddMultipleStudentsPage> {
         padding: const EdgeInsets.all(20.0),
         child: ListView(
           children: [
-            Card(
+            Padding(
+              padding: const EdgeInsets.all(5.0),
               child: TextField(
                 controller: studentNameController,
-                decoration: InputDecoration(hintText: 'Student Name'),
+                decoration: InputDecoration(
+                  label: Text('Student Name'),
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                ),
               ),
             ),
-            Card(
+            Padding(
+              padding: const EdgeInsets.all(5.0),
               child: TextField(
                 controller: studentIdController,
-                decoration: InputDecoration(hintText: 'Student ID'),
+                decoration: InputDecoration(
+                    label: Text('Student ID'),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20)),
+                    )),
               ),
             ),
-            Card(
+            Padding(
+              padding: const EdgeInsets.all(5.0),
               child: DropdownButtonFormField<String>(
                 value: selectedSemester,
-                hint: Text('Select Semester'),
+                decoration: InputDecoration(
+                  labelText:
+                      'Select Semester', // This behaves like a floating label
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(20))),
+                ),
                 items: semesters.map((String semester) {
                   return DropdownMenuItem<String>(
                     value: semester,

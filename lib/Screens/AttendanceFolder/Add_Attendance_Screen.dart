@@ -158,7 +158,12 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
             // Dropdown for semester selection
             DropdownButtonFormField<String>(
               value: selectedSemester,
-              hint: Text('Select Semester'),
+              decoration: InputDecoration(
+                labelText:
+                    'Select Semester', // This behaves like a floating label
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+              ),
               items: semesters.map((sem) {
                 return DropdownMenuItem(value: sem, child: Text(sem));
               }).toList(),
@@ -174,7 +179,12 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
             // Dropdown for subject selection
             DropdownButtonFormField<String>(
               value: selectedSubject,
-              hint: Text('Select Subject'),
+              decoration: InputDecoration(
+                labelText:
+                    'Select Subject', // This behaves like a floating label
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20))),
+              ),
               items: subjects.map((subj) {
                 return DropdownMenuItem(value: subj, child: Text(subj));
               }).toList(),

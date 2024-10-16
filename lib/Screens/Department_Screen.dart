@@ -25,20 +25,27 @@ class _DepartmentpageState extends State<Departmentpage> {
         padding: const EdgeInsets.all(20.0),
         child: Center(
           child: Column(children: [
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => Attendancepage(
-                            departmentName: widget.departmentName)));
-              },
-              child: Container(
-                height: 200,
-                width: 300,
-                color: Colors.blueGrey,
-                child: Center(child: Text('Attendance')),
-              ),
+            SizedBox(
+              height: 80,
+            ),
+            Text(
+              'chose what do you want to see',
+              style: TextStyle(fontSize: 25),
+            ),
+            SizedBox(
+              height: 50,
+            ),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => Attendancepage(
+                                departmentName: widget.departmentName)));
+                  },
+                  child: Text('Attendance')),
             ),
             SizedBox(height: 20),
             SizedBox(
