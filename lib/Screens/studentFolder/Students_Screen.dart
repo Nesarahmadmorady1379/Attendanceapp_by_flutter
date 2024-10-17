@@ -1,12 +1,13 @@
-import 'dart:convert';
 import 'dart:io'; // For file handling
 
-import 'package:attendanceapp/Screens/studentFolder/Addingmutiplestuden.dart';
-import 'package:attendanceapp/Screens/studentFolder/Addone_Student_Screen.dart';
+import 'package:attendanceapp/Databasehelpers/Studentdatabasehelper.dart';
+import 'package:attendanceapp/Moldels/Studentmodel.dart';
 import 'package:csv/csv.dart'; // For CSV parsing
 import 'package:file_picker/file_picker.dart'; // For file picking
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
+import 'Addingmutiplestuden.dart';
+import 'Addone_Student_Screen.dart';
 
 class StudentPage extends StatefulWidget {
   final String departmentName;
@@ -18,7 +19,7 @@ class StudentPage extends StatefulWidget {
 }
 
 class _StudentPageState extends State<StudentPage> {
-  List<Map<String, String>> students = [];
+  List<Student> students = [];
 
   @override
   void initState() {
@@ -26,40 +27,20 @@ class _StudentPageState extends State<StudentPage> {
     _loadStudents();
   }
 
-  // Load students from SharedPreferences for the specific department
+  // Load students from SQLite for the specific department
   void _loadStudents() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? studentsString =
-        prefs.getString('students_${widget.departmentName}');
-
-    if (studentsString != null) {
-      try {
-        List<dynamic> decodedList = json.decode(studentsString);
-        setState(() {
-          students = decodedList.map<Map<String, String>>((item) {
-            return Map<String, String>.from(item);
-          }).toList();
-        });
-      } catch (e) {
-        print('Error loading students: $e');
-        setState(() {
-          students = []; // Reset students to empty if there's an error
-        });
-      }
-    }
-  }
-
-  // Save students to SharedPreferences for the specific department
-  void _saveStudents() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('students_${widget.departmentName}', json.encode(students));
-  }
-
-  // Deleting a student from the list
-  void _deleteStudent(int index) {
+    List<Student> loadedStudents =
+        await DatabaseHelper().getStudentsByDepartment(widget.departmentName);
     setState(() {
-      students.removeAt(index);
-      _saveStudents();
+      students = loadedStudents;
+    });
+  }
+
+  // Delete a student from the database and the list
+  void _deleteStudent(int index) async {
+    await DatabaseHelper().deleteStudent(students[index].id!); // Delete from DB
+    setState(() {
+      students.removeAt(index); // Remove from UI list
     });
   }
 
@@ -79,9 +60,9 @@ class _StudentPageState extends State<StudentPage> {
                   padding: const EdgeInsets.only(left: 15.0, right: 15.0),
                   child: Card(
                     child: ListTile(
-                      title: Text('Name: ${students[index]['name']!}'),
+                      title: Text('Name: ${students[index].name}'),
                       subtitle: Text(
-                        'ID: ${students[index]['id']} | Semester: ${students[index]['semester']}',
+                        'ID: ${students[index].studentId} | Semester: ${students[index].semester}',
                       ),
                       trailing: IconButton(
                         icon: Icon(Icons.delete),
@@ -171,24 +152,30 @@ class _StudentPageState extends State<StudentPage> {
           const CsvToListConverter().convert(fileContent);
 
       // Assuming CSV format: First column for student name, second for student ID, third for semester
-      List<Map<String, String>> newStudents = [];
+      List<Student> newStudents = [];
       for (var row in csvTable) {
         if (row.length >= 3) {
           // Ensure 3 columns are present
           String studentName = row[0].toString();
           String studentId = row[1].toString();
           String semester = row[2].toString();
-          newStudents.add({
-            'name': studentName,
-            'id': studentId,
-            'semester': semester,
-          });
+          Student student = Student(
+            name: studentName,
+            studentId: studentId,
+            semester: semester,
+            department: widget.departmentName,
+          );
+          newStudents.add(student);
         }
       }
 
+      // Insert new students into SQLite and reload the list
+      for (var student in newStudents) {
+        await DatabaseHelper().insertStudent(student);
+      }
+
       setState(() {
-        students.addAll(newStudents);
-        _saveStudents(); // Save updated student list
+        _loadStudents(); // Reload student list after inserting
       });
     }
   }

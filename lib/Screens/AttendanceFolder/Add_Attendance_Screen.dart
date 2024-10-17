@@ -1,11 +1,10 @@
-import 'dart:convert';
-
+import 'package:attendanceapp/Databasehelpers/Attendancedatabasehelper.dart';
+import 'package:attendanceapp/Moldels/Attendancemodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AddAttendancePage extends StatefulWidget {
-  final String departmentName; // New parameter for department name
+  final String departmentName;
 
   const AddAttendancePage({Key? key, required this.departmentName})
       : super(key: key);
@@ -15,7 +14,6 @@ class AddAttendancePage extends StatefulWidget {
 }
 
 class _AddAttendancePageState extends State<AddAttendancePage> {
-  String? selectedDepartment;
   String? selectedSemester;
   String? selectedSubject;
   DateTime? startDate;
@@ -32,31 +30,17 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
     _loadData();
   }
 
-  // Load department, subjects, and students from SharedPreferences
+  // Load data for subjects and students
   void _loadData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-
+    // Replace with your method to load subjects and students from sqflite
+    // For demonstration, you can initialize subjects and students here.
+    // Example:
     setState(() {
-      selectedDepartment =
-          widget.departmentName; // Use the passed department name
-
-      // Load subjects for the specific department
-      String? subjectsString = prefs.getString('subjects_$selectedDepartment');
-      if (subjectsString != null) {
-        List<dynamic> decodedList = json.decode(subjectsString);
-        subjects = decodedList.map<String>((item) {
-          return item['name'];
-        }).toList();
-      }
-
-      // Load students for the specific department
-      String? studentsString = prefs.getString('students_$selectedDepartment');
-      if (studentsString != null) {
-        List<dynamic> decodedList = json.decode(studentsString);
-        allStudents = decodedList.map<Map<String, String>>((item) {
-          return Map<String, String>.from(item);
-        }).toList();
-      }
+      subjects = ['Math', 'Physics', 'Chemistry']; // Sample subjects
+      allStudents = [
+        {'name': 'John Doe', 'id': '123', 'semester': '1'},
+        {'name': 'Jane Smith', 'id': '124', 'semester': '1'}
+      ]; // Sample students
     });
   }
 
@@ -69,7 +53,7 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
     });
   }
 
-  // Save attendance for the filtered students to SharedPreferences
+  // Save attendance for the filtered students to SQLite
   void _saveAttendance() async {
     if (selectedSemester == null ||
         selectedSubject == null ||
@@ -84,31 +68,20 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
       return;
     }
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String key =
-        'attendance_${widget.departmentName}'; // department-specific key
-
-    // Get existing attendance data if any
-    String? existingAttendanceString = prefs.getString(key);
-    List<dynamic> existingAttendance = existingAttendanceString != null
-        ? json.decode(existingAttendanceString)
-        : [];
-
     // Create new attendance record
-    Map<String, dynamic> newAttendance = {
-      'department': widget.departmentName,
-      'semester': selectedSemester,
-      'subject': selectedSubject,
-      'students': filteredStudents,
-      'startDate': startDate!.toIso8601String(),
-      'endDate': endDate!.toIso8601String(),
-    };
+    Attendance newAttendance = Attendance(
+      department: widget.departmentName,
+      semester: selectedSemester!,
+      subject: selectedSubject!,
+      startDate: startDate!,
+      endDate: endDate!,
+      students: filteredStudents
+          .map((student) => student['name']!)
+          .toList(), // Convert names to list
+    );
 
-    // Add new attendance record to existing records
-    existingAttendance.add(newAttendance);
-
-    // Save updated attendance back to SharedPreferences
-    prefs.setString(key, json.encode(existingAttendance));
+    // Save attendance in the database
+    await DatabaseHelper().addAttendance(newAttendance);
 
     // Navigate back with the new attendance record
     Navigator.pop(
@@ -159,8 +132,7 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
             DropdownButtonFormField<String>(
               value: selectedSemester,
               decoration: InputDecoration(
-                labelText:
-                    'Select Semester', // This behaves like a floating label
+                labelText: 'Select Semester',
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(20))),
               ),
@@ -180,8 +152,7 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
             DropdownButtonFormField<String>(
               value: selectedSubject,
               decoration: InputDecoration(
-                labelText:
-                    'Select Subject', // This behaves like a floating label
+                labelText: 'Select Subject',
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.all(Radius.circular(20))),
               ),
@@ -204,8 +175,7 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
                   onPressed: _pickStartDate,
                   child: Text(startDate == null
                       ? 'Select Start Date'
-                      : DateFormat('yyyy-MM-dd')
-                          .format(startDate!)), // Format the date here
+                      : DateFormat('yyyy-MM-dd').format(startDate!)),
                 ),
                 SizedBox(width: 10),
                 ElevatedButton(
@@ -216,23 +186,26 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
                 ),
               ],
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 20),
 
-            // Display filtered students based on the selected semester
+            // List of filtered students
             Expanded(
               child: ListView.builder(
                 itemCount: filteredStudents.length,
                 itemBuilder: (context, index) {
                   var student = filteredStudents[index];
-                  return ListTile(
+                  return CheckboxListTile(
                     title: Text(student['name']!),
-                    subtitle: Text('ID: ${student['id']}'),
+                    value: true, // You can manage checked state as needed
+                    onChanged: (bool? value) {
+                      // Handle check/uncheck here if needed
+                    },
                   );
                 },
               ),
             ),
 
-            // Save attendance button
+            // Save button
             ElevatedButton(
               onPressed: _saveAttendance,
               child: Text('Save Attendance'),

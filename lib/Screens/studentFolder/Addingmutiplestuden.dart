@@ -1,7 +1,6 @@
-import 'dart:convert';
-
+import 'package:attendanceapp/Databasehelpers/Studentdatabasehelper.dart';
+import 'package:attendanceapp/Moldels/Studentmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class AddMultipleStudentsPage extends StatefulWidget {
   final String departmentName;
@@ -36,22 +35,19 @@ class _AddMultipleStudentsPageState extends State<AddMultipleStudentsPage> {
     selectedSemester = null; // Reset the dropdown after adding a student
   }
 
-  // Save all students to SharedPreferences
+  // Save all students to SQLite
   void _saveAllStudents() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? studentsString =
-        prefs.getString('students_${widget.departmentName}');
-    List<Map<String, String>> students = [];
-
-    if (studentsString != null) {
-      List<dynamic> decodedList = json.decode(studentsString);
-      students = decodedList.map<Map<String, String>>((item) {
-        return Map<String, String>.from(item);
-      }).toList();
+    // Loop through the list of new students and insert each one into SQLite
+    for (var student in newStudents) {
+      Student newStudent = Student(
+        name: student['name']!,
+        studentId: student['id']!,
+        semester: student['semester']!,
+        department: widget.departmentName,
+      );
+      await DatabaseHelper().insertStudent(newStudent); // Insert into SQLite
     }
 
-    students.addAll(newStudents);
-    prefs.setString('students_${widget.departmentName}', json.encode(students));
     Navigator.pop(context, true); // Navigate back to StudentPage
   }
 

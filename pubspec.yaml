@@ -13,7 +13,7 @@ dependencies:
  
     sdk: flutter   # This line needs to point to the Flutter SDK
   cupertino_icons: ^1.0.8
-  sqflite: ^2.3.3+2
+  sqflite: ^2.4.0
   path: ^1.9.0
   shared_preferences: ^2.3.2
   file_picker: ^8.1.2

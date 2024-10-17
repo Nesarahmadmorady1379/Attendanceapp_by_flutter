@@ -1,10 +1,9 @@
-import 'dart:convert';
-
+import 'package:attendanceapp/Databasehelpers/Subjectdatabasehelper.dart';
+import 'package:attendanceapp/Moldels/Subjectmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class SubjectsPage extends StatefulWidget {
-  final String departmentName; // Added to hold the department name
+  final String departmentName;
 
   const SubjectsPage({Key? key, required this.departmentName})
       : super(key: key);
@@ -14,7 +13,8 @@ class SubjectsPage extends StatefulWidget {
 }
 
 class _SubjectsPageState extends State<SubjectsPage> {
-  List<Map<String, String>> subjects = [];
+  List<Subject> subjects = [];
+  final DatabaseHelper dbHelper = DatabaseHelper();
 
   @override
   void initState() {
@@ -22,58 +22,35 @@ class _SubjectsPageState extends State<SubjectsPage> {
     _loadSubjects();
   }
 
-  // Load subjects from SharedPreferences for the specific department
+  // Load subjects from SQLite for the specific department
   void _loadSubjects() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? subjectsString =
-        prefs.getString('subjects_${widget.departmentName}');
-
-    if (subjectsString != null) {
-      try {
-        List<dynamic> decodedList = json.decode(subjectsString);
-        setState(() {
-          subjects = decodedList.map<Map<String, String>>((item) {
-            return Map<String, String>.from(item);
-          }).toList();
-        });
-      } catch (e) {
-        print('Error loading subjects: $e');
-        setState(() {
-          subjects = []; // Reset subjects to an empty list if there's an error
-        });
-      }
-    }
-  }
-
-  // Save subjects to SharedPreferences for the specific department
-  void _saveSubjects() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    // Save the subjects list after encoding it into JSON
-    prefs.setString('subjects_${widget.departmentName}', json.encode(subjects));
-  }
-
-  // Adding a subject to the list
-  void _addSubject(String name, String credit) {
+    List<Subject> loadedSubjects =
+        await dbHelper.getSubjects(widget.departmentName);
     setState(() {
-      subjects.add({'name': name, 'credit': credit});
-      _saveSubjects(); // Save to SharedPreferences after adding
+      subjects = loadedSubjects;
     });
   }
 
-  // Editing a subject in the list
-  void _editSubject(int index, String name, String credit) {
-    setState(() {
-      subjects[index] = {'name': name, 'credit': credit};
-      _saveSubjects(); // Save to SharedPreferences after editing
-    });
+  // Save subject to SQLite
+  void _addSubject(String name, String credit) async {
+    Subject newSubject =
+        Subject(department: widget.departmentName, name: name, credit: credit);
+    await dbHelper.addSubject(newSubject);
+    _loadSubjects(); // Reload subjects after adding
   }
 
-  // Deleting a subject from the list
-  void _deleteSubject(int index) {
-    setState(() {
-      subjects.removeAt(index);
-      _saveSubjects(); // Save to SharedPreferences after deleting
-    });
+  // Update subject in SQLite
+  void _editSubject(int id, String name, String credit) async {
+    Subject updatedSubject = Subject(
+        id: id, department: widget.departmentName, name: name, credit: credit);
+    await dbHelper.updateSubject(updatedSubject);
+    _loadSubjects(); // Reload subjects after editing
+  }
+
+  // Delete subject from SQLite
+  void _deleteSubject(int id) async {
+    await dbHelper.deleteSubject(id);
+    _loadSubjects(); // Reload subjects after deleting
   }
 
   @override
@@ -88,16 +65,17 @@ class _SubjectsPageState extends State<SubjectsPage> {
         itemBuilder: (context, index) {
           return Card(
             child: ListTile(
-              title: Text(subjects[index]['name']!),
-              subtitle: Text('Credit: ${subjects[index]['credit']}'),
+              title: Text(subjects[index].name),
+              subtitle: Text('Credit: ${subjects[index].credit}'),
               trailing: IconButton(
                 icon: Icon(Icons.delete),
                 onPressed: () {
-                  _deleteSubject(index);
+                  _deleteSubject(subjects[index].id!);
                 },
               ),
               onTap: () {
-                _showEditSubjectDialog(context, index);
+                _showEditSubjectDialog(context, subjects[index].id!,
+                    subjects[index].name, subjects[index].credit);
               },
             ),
           );
@@ -155,11 +133,12 @@ class _SubjectsPageState extends State<SubjectsPage> {
   }
 
   // Dialog for editing an existing subject
-  void _showEditSubjectDialog(BuildContext context, int index) {
+  void _showEditSubjectDialog(
+      BuildContext context, int id, String name, String credit) {
     TextEditingController subjectNameController =
-        TextEditingController(text: subjects[index]['name']);
+        TextEditingController(text: name);
     TextEditingController subjectCreditController =
-        TextEditingController(text: subjects[index]['credit']);
+        TextEditingController(text: credit);
 
     showDialog(
       context: context,
@@ -169,26 +148,14 @@ class _SubjectsPageState extends State<SubjectsPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: TextField(
-                  controller: subjectNameController,
-                  decoration: InputDecoration(
-                      label: Text('Subject Name'),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)))),
-                ),
+              TextField(
+                controller: subjectNameController,
+                decoration: InputDecoration(hintText: 'Subject Name'),
               ),
-              Padding(
-                padding: const EdgeInsets.all(5.0),
-                child: TextField(
-                  controller: subjectCreditController,
-                  decoration: InputDecoration(
-                      label: Text('Subject Credit'),
-                      border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)))),
-                  keyboardType: TextInputType.number,
-                ),
+              TextField(
+                controller: subjectCreditController,
+                decoration: InputDecoration(hintText: 'Subject Credit'),
+                keyboardType: TextInputType.number,
               ),
             ],
           ),
@@ -197,7 +164,7 @@ class _SubjectsPageState extends State<SubjectsPage> {
               onPressed: () {
                 if (subjectNameController.text.isNotEmpty &&
                     subjectCreditController.text.isNotEmpty) {
-                  _editSubject(index, subjectNameController.text,
+                  _editSubject(id, subjectNameController.text,
                       subjectCreditController.text);
                   Navigator.of(context).pop();
                 }
