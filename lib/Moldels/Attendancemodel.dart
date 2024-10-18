@@ -1,11 +1,10 @@
 class Attendance {
-  final int? id;
-  final String department;
-  final String semester;
-  final String subject;
-  final DateTime startDate;
-  final DateTime endDate;
-  final List<String> students; // This should remain a List<String>
+  int? id;
+  String department;
+  String semester;
+  String subject;
+  String startDate;
+  String endDate;
 
   Attendance({
     this.id,
@@ -14,30 +13,29 @@ class Attendance {
     required this.subject,
     required this.startDate,
     required this.endDate,
-    required this.students,
   });
 
+  // Convert a Attendance object into a Map object
   Map<String, dynamic> toMap() {
     return {
       'id': id,
       'department': department,
       'semester': semester,
       'subject': subject,
-      'startDate': startDate.toIso8601String(),
-      'endDate': endDate.toIso8601String(),
-      'students': students.join(','), // Convert list to a string
+      'startDate': startDate,
+      'endDate': endDate,
     };
   }
 
+  // Extract a Attendance object from a Map object
   factory Attendance.fromMap(Map<String, dynamic> map) {
     return Attendance(
       id: map['id'],
       department: map['department'],
       semester: map['semester'],
       subject: map['subject'],
-      startDate: DateTime.parse(map['startDate']),
-      endDate: DateTime.parse(map['endDate']),
-      students: map['students'].split(','), // Convert string back to list
+      startDate: map['startDate'],
+      endDate: map['endDate'],
     );
   }
 }

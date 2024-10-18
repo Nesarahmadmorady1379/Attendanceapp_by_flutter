@@ -1,59 +1,94 @@
 import 'package:attendanceapp/Moldels/Attendancemodel.dart';
+import 'package:attendanceapp/Moldels/Dalyattendancemodle.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
-  factory DatabaseHelper() => _instance;
+  static Database? _database;
+
+  factory DatabaseHelper() {
+    return _instance;
+  }
 
   DatabaseHelper._internal();
 
-  Database? _database;
-
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDB();
+    _database = await _initDb();
     return _database!;
   }
 
-  Future<Database> _initDB() async {
+  Future<Database> _initDb() async {
     String path = join(await getDatabasesPath(), 'attendance.db');
     return await openDatabase(
       path,
       version: 1,
-      onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE attendances (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            department TEXT,
-            semester TEXT,
-            subject TEXT,
-            startDate TEXT,
-            endDate TEXT,
-            students TEXT
-          )
-        ''');
-      },
+      onCreate: _onCreate,
     );
   }
 
-  Future<void> addAttendance(Attendance attendance) async {
-    final db = await database;
-    await db.insert('attendances', attendance.toMap());
+  Future<void> _onCreate(Database db, int version) async {
+    await db.execute('''
+      CREATE TABLE attendances(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        department TEXT,
+        semester TEXT,
+        subject TEXT,
+        startDate TEXT,
+        endDate TEXT
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE Dalyattendancemodle(
+        id INTEGER PRIMARY KEY ,
+        name TEXT,
+        studentId TEXT,
+        isPresent INTEGER,
+        attendanceId INTEGER,
+        FOREIGN KEY (attendanceId) REFERENCES attendances(id) ON DELETE CASCADE
+      )
+    ''');
   }
 
-  Future<List<Attendance>> getAttendances(String department) async {
+  // Attendance CRUD operations
+  Future<int> insertAttendance(Attendance attendance) async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db
-        .query('attendances', where: 'department = ?', whereArgs: [department]);
-
-    return List.generate(maps.length, (i) {
-      return Attendance.fromMap(maps[i]);
-    });
+    return await db.insert('attendances', attendance.toMap());
   }
 
-  Future<void> deleteAttendance(int id) async {
+  Future<List<Attendance>> getAttendances() async {
     final db = await database;
-    await db.delete('attendances', where: 'id = ?', whereArgs: [id]);
+    var result = await db.query('attendances');
+    return result.map((e) => Attendance.fromMap(e)).toList();
+  }
+
+  Future<int> deleteAttendance(int id) async {
+    final db = await database;
+    return await db.delete('attendances', where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Student CRUD operations
+  Future<int> insertStudent(
+      Dalyattendancemodle student, int attendanceId) async {
+    final db = await database;
+    var studentData = student.toMap();
+    studentData['attendanceId'] = attendanceId;
+    return await db.insert('Dalyattendancemodle', studentData);
+  }
+
+  Future<List<Dalyattendancemodle>> getStudentsByAttendanceId(
+      int attendanceId) async {
+    final db = await database;
+    var result = await db.query('Dalyattendancemodle',
+        where: 'attendanceId = ?', whereArgs: [attendanceId]);
+    return result.map((e) => Dalyattendancemodle.fromMap(e)).toList();
+  }
+
+  Future<int> deleteStudentsByAttendanceId(int attendanceId) async {
+    final db = await database;
+    return await db.delete('Dalyattendancemodle',
+        where: 'attendanceId = ?', whereArgs: [attendanceId]);
   }
 }

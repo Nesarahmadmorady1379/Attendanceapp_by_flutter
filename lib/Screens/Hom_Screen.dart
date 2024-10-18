@@ -1,6 +1,8 @@
 import 'package:attendanceapp/Databasehelpers/Departmenthelper.dart';
 import 'package:attendanceapp/Moldels/Deartnebtmodel.dart';
+import 'package:attendanceapp/Screens/About_Screen.dart';
 import 'package:attendanceapp/Screens/Department_Screen.dart';
+import 'package:attendanceapp/Screens/settingsFolder/Setting_Screen.dart';
 import 'package:flutter/material.dart';
 // Import the Department model
 
@@ -84,7 +86,112 @@ class _HomepageState extends State<Homepage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Your existing button layout...
+                  Container(
+                    width: 80,
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 2),
+                        borderRadius: BorderRadius.circular(15)),
+                    child: Column(
+                      children: [
+                        IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => Settingpage()));
+                            },
+                            icon: Icon(
+                              color: Colors.blueAccent,
+                              Icons.settings,
+                              size: 50,
+                            )),
+                        Text(
+                          'settings',
+                          style: TextStyle(color: Colors.black),
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Container(
+                    width: 80,
+                    decoration: BoxDecoration(
+                        border: Border.all(),
+                        borderRadius: BorderRadius.circular(15)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                            onPressed: () {},
+                            icon: Icon(
+                              color: Colors.blueAccent,
+                              Icons.share,
+                              size: 50,
+                            )),
+                        Text(
+                          'share',
+                          style: TextStyle(color: Colors.black),
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Container(
+                    width: 80,
+                    decoration: BoxDecoration(
+                        border: Border.all(),
+                        borderRadius: BorderRadius.circular(15)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                            onPressed: () {},
+                            icon: Icon(
+                              color: Colors.blueAccent,
+                              Icons.email,
+                              size: 50,
+                            )),
+                        Text(
+                          'email',
+                          style: TextStyle(color: Colors.black),
+                        )
+                      ],
+                    ),
+                  ),
+                  SizedBox(
+                    width: 10,
+                  ),
+                  Container(
+                    width: 80,
+                    decoration: BoxDecoration(
+                        border: Border.all(width: 2),
+                        borderRadius: BorderRadius.circular(15)),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                            onPressed: () {
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => About_Screen()));
+                            },
+                            icon: Icon(
+                              color: Colors.blueAccent,
+                              Icons.person,
+                              size: 50,
+                            )),
+                        Text(
+                          'about',
+                          style: TextStyle(color: Colors.black),
+                        ),
+                      ],
+                    ),
+                  )
                 ],
               ),
             ),

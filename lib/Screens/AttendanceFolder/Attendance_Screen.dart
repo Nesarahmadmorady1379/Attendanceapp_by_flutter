@@ -1,25 +1,23 @@
-import 'dart:convert';
-
+import 'package:attendanceapp/Databasehelpers/Attendancedatabasehelper.dart';
+import 'package:attendanceapp/Moldels/Attendancemodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'add_attendance_screen.dart';
+import 'take_attendance_screen.dart';
+import 'view_attendance_screen.dart';
 
-import 'Add_Attendance_Screen.dart';
-import 'Take_Attendance_Screen.dart';
-import 'View_Attendance_Screen.dart';
 
-class Attendancepage extends StatefulWidget {
+class AttendancePage extends StatefulWidget {
   final String departmentName;
 
-  const Attendancepage({Key? key, required this.departmentName})
-      : super(key: key);
+  const AttendancePage({Key? key, required this.departmentName}) : super(key: key);
 
   @override
-  _AttendanceOverviewPageState createState() => _AttendanceOverviewPageState();
+  _AttendancePageState createState() => _AttendancePageState();
 }
 
-class _AttendanceOverviewPageState extends State<Attendancepage> {
-  List<Map<String, dynamic>> attendances = [];
+class _AttendancePageState extends State<AttendancePage> {
+  List<Attendance> attendances = [];
 
   @override
   void initState() {
@@ -27,39 +25,18 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
     _loadAttendances();
   }
 
-  // Load attendance data from SharedPreferences
+  // Load attendance data from the database
   void _loadAttendances() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      try {
-        String? attendanceString =
-            prefs.getString('attendance_${widget.departmentName}');
-        if (attendanceString != null) {
-          List<dynamic> attendanceList = json.decode(attendanceString);
-          attendances =
-              attendanceList.map((e) => Map<String, dynamic>.from(e)).toList();
-        } else {
-          attendances = [];
-        }
-      } catch (error) {
-        print('Error loading attendance data: $error');
-        attendances = []; // Fallback to an empty list on error
-      }
-    });
-  }
-
-  // Save updated attendance data back to SharedPreferences
-  void _saveAttendances() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String encodedData = jsonEncode(attendances);
-    prefs.setString('attendance_${widget.departmentName}', encodedData);
+    DatabaseHelper dbHelper = DatabaseHelper();
+    attendances = await dbHelper.getAttendancesByDepartment(widget.departmentName);
+    setState(() {});
   }
 
   // Delete an attendance record
-  void _deleteAttendance(int index) {
+  void _deleteAttendance(int index) async {
+    await DatabaseHelper().deleteAttendance(attendances[index].id!);
     setState(() {
       attendances.removeAt(index);
-      _saveAttendances();
     });
   }
 
@@ -80,7 +57,7 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => TakeAttendancePage(
-                        attendance: attendances[index], // Passing dynamic map
+                        attendance: attendances[index],
                       ),
                     ),
                   );
@@ -94,7 +71,7 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => ViewAttendancePage(
-                        attendance: attendances[index], // Passing dynamic map
+                        attendance: attendances[index],
                       ),
                     ),
                   );
@@ -122,22 +99,20 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
             child: ListTile(
               title: Row(
                 children: [
-                  Text("Subject: ${attendance['subject']}"),
+                  Text("Subject: ${attendance.subject}"),
                   SizedBox(width: 3),
                 ],
               ),
-              subtitle: Text("Semester: ${attendance['semester']}"),
+              subtitle: Text("Semester: ${attendance.semester}"),
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    DateFormat.yMd()
-                        .format(DateTime.parse(attendance['startDate'])),
+                    DateFormat.yMd().format(DateTime.parse(attendance.startDate)),
                   ),
                   SizedBox(width: 10),
                   Text(
-                    DateFormat.yMd()
-                        .format(DateTime.parse(attendance['endDate'])),
+                    DateFormat.yMd().format(DateTime.parse(attendance.endDate)),
                   ),
                   IconButton(
                     icon: Icon(Icons.delete),
@@ -157,7 +132,6 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () {
-          // Navigate to the AddAttendancePage and wait for the result
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -170,7 +144,6 @@ class _AttendanceOverviewPageState extends State<Attendancepage> {
             if (newAttendance != null) {
               setState(() {
                 attendances.add(newAttendance);
-                _saveAttendances();
               });
             }
           });
