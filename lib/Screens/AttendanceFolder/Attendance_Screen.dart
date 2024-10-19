@@ -2,22 +2,24 @@ import 'package:attendanceapp/Databasehelpers/Attendancedatabasehelper.dart';
 import 'package:attendanceapp/Moldels/Attendancemodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'add_attendance_screen.dart';
-import 'take_attendance_screen.dart';
-import 'view_attendance_screen.dart';
 
+import 'Add_Attendance_Screen.dart';
+import 'Take_Attendance_Screen.dart';
+import 'View_Attendance_Screen.dart';
 
 class AttendancePage extends StatefulWidget {
   final String departmentName;
 
-  const AttendancePage({Key? key, required this.departmentName}) : super(key: key);
+  const AttendancePage({Key? key, required this.departmentName})
+      : super(key: key);
 
   @override
-  _AttendancePageState createState() => _AttendancePageState();
+  _AttendanceOverviewPageState createState() => _AttendanceOverviewPageState();
 }
 
-class _AttendancePageState extends State<AttendancePage> {
+class _AttendanceOverviewPageState extends State<AttendancePage> {
   List<Attendance> attendances = [];
+  final dbHelper = DatabaseHelper();
 
   @override
   void initState() {
@@ -27,21 +29,18 @@ class _AttendancePageState extends State<AttendancePage> {
 
   // Load attendance data from the database
   void _loadAttendances() async {
-    DatabaseHelper dbHelper = DatabaseHelper();
-    attendances = await dbHelper.getAttendancesByDepartment(widget.departmentName);
+    attendances = await dbHelper.getAttendances();
     setState(() {});
   }
 
   // Delete an attendance record
-  void _deleteAttendance(int index) async {
-    await DatabaseHelper().deleteAttendance(attendances[index].id!);
-    setState(() {
-      attendances.removeAt(index);
-    });
+  void _deleteAttendance(int id) async {
+    await dbHelper.deleteAttendance(id);
+    _loadAttendances(); // Refresh the list after deletion
   }
 
   // Show options for each attendance (Take/View Attendance)
-  void _showAttendanceOptionsDialog(int index) {
+  void _showAttendanceOptionsDialog(Attendance attendance) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -56,9 +55,8 @@ class _AttendancePageState extends State<AttendancePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => TakeAttendancePage(
-                        attendance: attendances[index],
-                      ),
+                      builder: (context) =>
+                          TakeAttendancePage(attendance: attendance),
                     ),
                   );
                 },
@@ -70,9 +68,8 @@ class _AttendancePageState extends State<AttendancePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ViewAttendancePage(
-                        attendance: attendances[index],
-                      ),
+                      builder: (context) =>
+                          ViewAttendancePage(attendance: attendance),
                     ),
                   );
                 },
@@ -107,23 +104,28 @@ class _AttendancePageState extends State<AttendancePage> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Updated to parse the custom date format
                   Text(
-                    DateFormat.yMd().format(DateTime.parse(attendance.startDate)),
+                    DateFormat.yMd().format(
+                      DateFormat('yyyy/MM/dd').parse(attendance.startDate),
+                    ),
                   ),
                   SizedBox(width: 10),
                   Text(
-                    DateFormat.yMd().format(DateTime.parse(attendance.endDate)),
+                    DateFormat.yMd().format(
+                      DateFormat('yyyy/MM/dd').parse(attendance.endDate),
+                    ),
                   ),
                   IconButton(
                     icon: Icon(Icons.delete),
                     onPressed: () {
-                      _deleteAttendance(index);
+                      _deleteAttendance(attendance.id!);
                     },
                   ),
                 ],
               ),
               onTap: () {
-                _showAttendanceOptionsDialog(index);
+                _showAttendanceOptionsDialog(attendance);
               },
             ),
           );
@@ -135,9 +137,8 @@ class _AttendancePageState extends State<AttendancePage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => AddAttendancePage(
-                departmentName: widget.departmentName,
-              ),
+              builder: (context) =>
+                  AddAttendancePage(departmentName: widget.departmentName),
             ),
           ).then((newAttendance) {
             // If a new attendance record is returned, add it to the list

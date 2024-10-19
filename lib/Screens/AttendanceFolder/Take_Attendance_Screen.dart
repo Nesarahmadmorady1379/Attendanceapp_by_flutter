@@ -1,106 +1,67 @@
-import 'package:attendanceapp/Databasehelpers/Attendancedatabasehelper.dart';
+import 'package:attendanceapp/Databasehelpers/Attendancedatabasehelper.dart'
+    as attendance_db;
+import 'package:attendanceapp/Databasehelpers/Studentdatabasehelper.dart'
+    as student_db;
 import 'package:attendanceapp/Moldels/Attendancemodel.dart';
-import 'package:attendanceapp/Moldels/Dalyattendancemodle.dart';
+import 'package:attendanceapp/Moldels/Studentmodel.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-
 
 class TakeAttendancePage extends StatefulWidget {
-  final Attendance attendance;
+  final Attendance attendance; // Add this line
 
-  const TakeAttendancePage({Key? key, required this.attendance}) : super(key: key);
+  const TakeAttendancePage({Key? key, required this.attendance})
+      : super(key: key); // Update constructor
 
   @override
   _TakeAttendancePageState createState() => _TakeAttendancePageState();
 }
 
 class _TakeAttendancePageState extends State<TakeAttendancePage> {
-  DateTime? currentDate;
-  List<Dalyattendancemodle> students = [];
+  final attendanceDbHelper = attendance_db.DatabaseHelper();
+  final studentDbHelper = student_db.DatabaseHelper();
+  List<Student> studentsForAttendance =
+      []; // Changed from attendances to studentsForAttendance
 
   @override
   void initState() {
     super.initState();
-    _loadStudents();
+    _loadStudentsForAttendance(); // Load students for the specific attendance
   }
 
-  void _loadStudents() async {
-    DatabaseHelper dbHelper = DatabaseHelper();
-    students = await dbHelper.getStudentsByAttendanceId(widget.attendance.id!);
+  Future<void> _loadStudentsForAttendance() async {
+    studentsForAttendance = await getStudentsForAttendance(
+        widget.attendance); // Use widget.attendance
     setState(() {});
   }
 
-  void _saveAttendance() async {
-    if (currentDate == null) {
-      currentDate = DateTime.now();
-    }
+  Future<List<Student>> getStudentsForAttendance(Attendance attendance) async {
+    List<Student> students = [];
 
-    DatabaseHelper dbHelper = DatabaseHelper();
-    for (var student in students) {
-      student.isPresent = student.isPresent; // Mark attendance based on checkbox
-      await dbHelper.insertStudent(student, widget.attendance.id!);
+    for (String studentId in attendance.studentIds) {
+      Student student = await studentDbHelper.getStudentById(studentId);
+      students.add(student);
     }
-
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Attendance saved')));
-    Navigator.pop(context);
-  }
-
-  void _pickCurrentDate() async {
-    DateTime? date = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (date != null) {
-      setState(() {
-        currentDate = date;
-      });
-    }
+    return students;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.attendance.department} - ${widget.attendance.semester} - ${widget.attendance.subject}'),
+        title: Text('Take Attendance for ${widget.attendance.subject}'),
       ),
-      body: Column(
-        children: [
-          ElevatedButton(
-            onPressed: _pickCurrentDate,
-            child: Text(currentDate == null ? 'Select Date' : DateFormat('yyyy-MM-dd').format(currentDate!)),
-          ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: students.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(students[index].name),
-                  subtitle: Text('ID: ${students[index].studentId}'),
-                  trailing: Checkbox(
-                    value: students[index].isPresent,
-                    onChanged: (value) {
-                      setState(() {
-                        students[index].isPresent = value ?? false;
-                      });
-                    },
-                  ),
-                );
-              },
+      body: ListView.builder(
+        itemCount: studentsForAttendance.length,
+        itemBuilder: (context, index) {
+          final student = studentsForAttendance[index];
+          return Card(
+            child: ListTile(
+              title: Text(student.name),
+              subtitle: Text(
+                  'ID: ${student.studentId} | Semester: ${student.semester}'),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              if (currentDate != null) {
-                _saveAttendance();
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Please select a date first')));
-              }
-            },
-            child: Text('Save Attendance'),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

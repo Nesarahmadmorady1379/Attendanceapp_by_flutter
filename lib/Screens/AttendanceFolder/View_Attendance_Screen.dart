@@ -1,12 +1,12 @@
 import 'dart:convert';
 
-import 'package:attendanceapp/Databasehelpers/Attendancedatabasehelper.dart';
 import 'package:attendanceapp/Moldels/Attendancemodel.dart';
-import 'package:attendanceapp/Moldels/Dalyattendancemodle.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// Make sure to import your Attendance model
 
 class ViewAttendancePage extends StatefulWidget {
-  final Attendance attendance;
+  final Attendance attendance; // Change to Attendance
 
   const ViewAttendancePage({Key? key, required this.attendance})
       : super(key: key);
@@ -16,7 +16,7 @@ class ViewAttendancePage extends StatefulWidget {
 }
 
 class _ViewAttendancePageState extends State<ViewAttendancePage> {
-  List<Dalyattendancemodle> students = [];
+  List<Map<String, dynamic>> attendanceData = [];
   List<String> dates = [];
   Map<String, Map<String, dynamic>> groupedAttendance = {};
 
@@ -26,48 +26,58 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
     _loadAttendanceData();
   }
 
-  // Load attendance data from the database
+  // Load attendance data from SharedPreferences
   void _loadAttendanceData() async {
-    DatabaseHelper dbHelper = DatabaseHelper();
-    students = await dbHelper.getStudentsByAttendanceId(widget.attendance.id!);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
 
-    for (var student in students) {
-      // Assume attendance data is stored in the format: { 'date': isPresent }
-      List<AttendanceRecord> attendanceRecords =
-          await dbHelper.getAttendanceRecordsByStudentId(student.studentId);
+    // Use the properties of the Attendance object
+    String attendanceKeyPrefix =
+        'attendance_${widget.attendance.department}_${widget.attendance.semester}_${widget.attendance.subject}';
 
-      for (var record in attendanceRecords) {
-        String date = record.date;
-        if (!groupedAttendance.containsKey(student.studentId)) {
-          groupedAttendance[student.studentId] = {
-            'name': student.name,
-            'id': student.studentId,
-            'attendance': {},
-            'presentDays': 0,
-            'absentDays': 0,
-          };
-        }
+    Set<String> allKeys = prefs.getKeys();
+    List<String> attendanceKeys =
+        allKeys.where((key) => key.startsWith(attendanceKeyPrefix)).toList();
 
-        groupedAttendance[student.studentId]!['attendance'][date] =
-            record.isPresent;
+    for (String key in attendanceKeys) {
+      List<String>? storedData = prefs.getStringList(key);
 
-        if (record.isPresent) {
-          groupedAttendance[student.studentId]!['presentDays']++;
-        } else {
-          groupedAttendance[student.studentId]!['absentDays']++;
-        }
+      if (storedData != null) {
+        for (String jsonString in storedData) {
+          Map<String, dynamic> entry = jsonDecode(jsonString);
+          String studentId = entry['id'];
 
-        if (!dates.contains(date)) {
-          dates.add(date);
+          if (!groupedAttendance.containsKey(studentId)) {
+            groupedAttendance[studentId] = {
+              'name': entry['name'],
+              'id': studentId,
+              'attendance': {},
+              'presentDays': 0,
+              'absentDays': 0
+            };
+          }
+
+          String? date = entry['date'];
+          if (date != null && date is String) {
+            groupedAttendance[studentId]!['attendance'][date] =
+                entry['isPresent'];
+
+            if (entry['isPresent'] == true) {
+              groupedAttendance[studentId]!['presentDays']++;
+            } else {
+              groupedAttendance[studentId]!['absentDays']++;
+            }
+
+            if (!dates.contains(date)) {
+              dates.add(date);
+            }
+          }
         }
       }
     }
 
     setState(() {
-      // Convert the map to a list for the DataTable
-      students = groupedAttendance.values
-          .map((e) => Dalyattendancemodle.fromMap(e))
-          .toList();
+      attendanceData =
+          groupedAttendance.values.toList(); // Ensure this line is included
     });
   }
 
@@ -78,63 +88,31 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
         title: Text(
             '${widget.attendance.department} - ${widget.attendance.semester} - ${widget.attendance.subject}'),
       ),
-      body: students.isNotEmpty
+      body: attendanceData.isNotEmpty
           ? SingleChildScrollView(
               scrollDirection: Axis.horizontal,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.vertical,
-                child: Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: Colors.black), // Border for the whole table
-                  ),
-                  child: DataTable(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          color: Colors.black), // Border for the table cells
-                    ),
-                    columns: [
-                      DataColumn(label: Text('Name')),
-                      DataColumn(label: Text('ID')),
-                      ...dates
-                          .map((date) => DataColumn(label: Text(date)))
-                          .toList(),
-                      DataColumn(label: Text('Present Days')),
-                      DataColumn(label: Text('Absent Days')),
-                    ],
-                    rows: students.map((student) {
-                      return DataRow(cells: [
-                        DataCell(Text(student.name)),
-                        DataCell(Text(student.studentId)),
-                        ...dates.map<DataCell>((date) {
-                          bool? isPresent =
-                              Dalyattendancemodle.attendance[date];
-                          return DataCell(
-                            RichText(
-                              text: TextSpan(
-                                children: [
-                                  TextSpan(
-                                    text: (isPresent) ? '✓' : 'x',
-                                    style: TextStyle(
-                                      color: (isPresent)
-                                          ? Colors.black
-                                          : Colors.red,
-                                      fontSize: 24,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                        DataCell(
-                            Text(Dalyattendancemodle.presentDays.toString())),
-                        DataCell(
-                            Text(Dalyattendancemodle.absentDays.toString())),
-                      ]);
+              child: DataTable(
+                columns: [
+                  DataColumn(label: Text('Name')),
+                  DataColumn(label: Text('ID')),
+                  ...dates
+                      .map((date) => DataColumn(label: Text(date)))
+                      .toList(),
+                  DataColumn(label: Text('Present Days')),
+                  DataColumn(label: Text('Absent Days')),
+                ],
+                rows: attendanceData.map((student) {
+                  return DataRow(cells: [
+                    DataCell(Text(student['name'] ?? '')),
+                    DataCell(Text(student['id'] ?? '')),
+                    ...dates.map<DataCell>((date) {
+                      bool? isPresent = student['attendance'][date];
+                      return DataCell(Text(isPresent == true ? '✓' : 'x'));
                     }).toList(),
-                  ),
-                ),
+                    DataCell(Text(student['presentDays'].toString())),
+                    DataCell(Text(student['absentDays'].toString())),
+                  ]);
+                }).toList(),
               ),
             )
           : Center(child: Text('No attendance data available')),

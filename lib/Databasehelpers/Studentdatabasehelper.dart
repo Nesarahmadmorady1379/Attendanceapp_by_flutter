@@ -73,4 +73,19 @@ class DatabaseHelper {
       whereArgs: [id],
     );
   }
+
+  Future<Student> getStudentById(String studentId) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'students',
+      where: 'studentId = ?',
+      whereArgs: [studentId],
+    );
+
+    if (maps.isNotEmpty) {
+      return Student.fromMap(maps.first);
+    } else {
+      throw Exception('Student not found');
+    }
+  }
 }

@@ -61,7 +61,7 @@ class _DepartmentpageState extends State<Departmentpage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => Attendancepage(
+                          builder: (context) => AttendancePage(
                             departmentName: department!.name,
                           ),
                         ),

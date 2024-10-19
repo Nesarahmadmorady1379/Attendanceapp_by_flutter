@@ -1,31 +1,35 @@
-class Dalyattendancemodle {
-  int? id;
-  String name;
-  String studentId;
+class DailyAttendance {
+  final int? id;
+  final int attendanceId; // Foreign key to Attendance
+  final String studentId;
   bool isPresent;
+  final String date;
 
-  Dalyattendancemodle({
+  DailyAttendance({
     this.id,
-    required this.name,
+    required this.attendanceId,
     required this.studentId,
     required this.isPresent,
+    required this.date,
   });
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'name': name,
+      'attendanceId': attendanceId,
       'studentId': studentId,
-      'isPresent': isPresent ? 1 : 0,
+      'isPresent': isPresent ? 1 : 0, // SQLite doesn't have a boolean type
+      'date': date,
     };
   }
 
-  factory Dalyattendancemodle.fromMap(Map<String, dynamic> map) {
-    return Dalyattendancemodle(
+  factory DailyAttendance.fromMap(Map<String, dynamic> map) {
+    return DailyAttendance(
       id: map['id'],
-      name: map['name'],
+      attendanceId: map['attendanceId'],
       studentId: map['studentId'],
       isPresent: map['isPresent'] == 1,
+      date: map['date'],
     );
   }
 }

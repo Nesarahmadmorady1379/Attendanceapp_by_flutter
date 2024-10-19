@@ -1,5 +1,4 @@
 import 'package:attendanceapp/Moldels/Attendancemodel.dart';
-import 'package:attendanceapp/Moldels/Dalyattendancemodle.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -15,44 +14,30 @@ class DatabaseHelper {
 
   Future<Database> get database async {
     if (_database != null) return _database!;
-    _database = await _initDb();
+    _database = await _initDatabase();
     return _database!;
   }
 
-  Future<Database> _initDb() async {
+  Future<Database> _initDatabase() async {
     String path = join(await getDatabasesPath(), 'attendance.db');
     return await openDatabase(
       path,
       version: 1,
-      onCreate: _onCreate,
+      onCreate: (db, version) {
+        return db.execute(
+          'CREATE TABLE attendances('
+          'id INTEGER PRIMARY KEY AUTOINCREMENT, '
+          'department TEXT, '
+          'semester TEXT, '
+          'subject TEXT, '
+          'startDate TEXT, '
+          'endDate TEXT, '
+          'studentIds TEXT)',
+        );
+      },
     );
   }
 
-  Future<void> _onCreate(Database db, int version) async {
-    await db.execute('''
-      CREATE TABLE attendances(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        department TEXT,
-        semester TEXT,
-        subject TEXT,
-        startDate TEXT,
-        endDate TEXT
-      )
-    ''');
-
-    await db.execute('''
-      CREATE TABLE Dalyattendancemodle(
-        id INTEGER PRIMARY KEY ,
-        name TEXT,
-        studentId TEXT,
-        isPresent INTEGER,
-        attendanceId INTEGER,
-        FOREIGN KEY (attendanceId) REFERENCES attendances(id) ON DELETE CASCADE
-      )
-    ''');
-  }
-
-  // Attendance CRUD operations
   Future<int> insertAttendance(Attendance attendance) async {
     final db = await database;
     return await db.insert('attendances', attendance.toMap());
@@ -60,35 +45,45 @@ class DatabaseHelper {
 
   Future<List<Attendance>> getAttendances() async {
     final db = await database;
-    var result = await db.query('attendances');
-    return result.map((e) => Attendance.fromMap(e)).toList();
+    final List<Map<String, dynamic>> maps = await db.query('attendances');
+
+    return List.generate(maps.length, (index) {
+      return Attendance.fromMap(maps[index]);
+    });
   }
 
+  Future<Attendance> getAttendanceById(int id) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'attendances',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+
+    if (maps.isNotEmpty) {
+      return Attendance.fromMap(maps.first);
+    } else {
+      throw Exception('Attendance not found');
+    }
+  }
+
+  // New method to delete attendance by ID
   Future<int> deleteAttendance(int id) async {
     final db = await database;
-    return await db.delete('attendances', where: 'id = ?', whereArgs: [id]);
+    return await db.delete(
+      'attendances',
+      where: 'id = ?',
+      whereArgs: [id],
+    );
   }
 
-  // Student CRUD operations
-  Future<int> insertStudent(
-      Dalyattendancemodle student, int attendanceId) async {
-    final db = await database;
-    var studentData = student.toMap();
-    studentData['attendanceId'] = attendanceId;
-    return await db.insert('Dalyattendancemodle', studentData);
+  // New function to convert student IDs string to a List<String>
+  List<String> convertStringToList(String studentIds) {
+    return studentIds.split(',').map((id) => id.trim()).toList();
   }
 
-  Future<List<Dalyattendancemodle>> getStudentsByAttendanceId(
-      int attendanceId) async {
-    final db = await database;
-    var result = await db.query('Dalyattendancemodle',
-        where: 'attendanceId = ?', whereArgs: [attendanceId]);
-    return result.map((e) => Dalyattendancemodle.fromMap(e)).toList();
-  }
-
-  Future<int> deleteStudentsByAttendanceId(int attendanceId) async {
-    final db = await database;
-    return await db.delete('Dalyattendancemodle',
-        where: 'attendanceId = ?', whereArgs: [attendanceId]);
+  // New function to convert List<String> to a comma-separated string
+  String convertListToString(List<String> studentIds) {
+    return studentIds.join(',');
   }
 }
