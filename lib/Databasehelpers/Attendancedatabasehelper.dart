@@ -24,46 +24,48 @@ class DatabaseHelper {
     String path = join(await getDatabasesPath(), 'attendance.db');
     return await openDatabase(
       path,
-      version: 3, // Increment the version for migration
+      version: 2, // Increment the version number
       onCreate: (db, version) async {
-        await db.execute(
-          'CREATE TABLE attendances('
-          'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-          'department TEXT, '
-          'semester TEXT, '
-          'subject TEXT, '
-          'startDate TEXT, '
-          'endDate TEXT, '
-          'studentIds TEXT)',
-        );
+        // Create Attendances table
+        await db.execute('''
+          CREATE TABLE attendances(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            department TEXT,
+            semester TEXT,
+            subject TEXT,
+            startDate TEXT,
+            endDate TEXT,
+            studentIds TEXT
+          )
+        ''');
+
         // Create DailyAttendance table
-        await db.execute(
-          'CREATE TABLE daily_attendance('
-          'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-          'attendanceId INTEGER, '
-          'studentId TEXT, '
-          'isPresent INTEGER, ' // 1 for present, 0 for absent
-          'date TEXT)',
-        );
-        // Assuming you also have a students table, uncomment and adjust if needed
-        /*
-        await db.execute(
-          'CREATE TABLE students('
-          'studentId TEXT PRIMARY KEY, '
-          'name TEXT)',
-        );
-        */
+        await db.execute('''
+          CREATE TABLE daily_attendance(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            attendanceId INTEGER,
+            studentId TEXT,
+            studentName TEXT,  // Added studentName column
+            isPresent INTEGER,
+            date TEXT
+          )
+        ''');
+
+        // Create Students table
+        await db.execute('''
+          CREATE TABLE students(
+            studentId TEXT PRIMARY KEY,
+            name TEXT,
+            department TEXT,
+            semester TEXT
+          )
+        ''');
       },
       onUpgrade: (db, oldVersion, newVersion) async {
-        if (oldVersion < 3) {
+        if (oldVersion < 2) {
+          // Add studentName column to daily_attendance table
           await db.execute(
-            'CREATE TABLE IF NOT EXISTS daily_attendance('
-            'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-            'attendanceId INTEGER, '
-            'studentId TEXT, '
-            'isPresent INTEGER, ' // 1 for present, 0 for absent
-            'date TEXT)',
-          );
+              'ALTER TABLE daily_attendance ADD COLUMN studentName TEXT');
         }
       },
     );
@@ -79,7 +81,6 @@ class DatabaseHelper {
   Future<List<Attendance>> getAttendances() async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query('attendances');
-
     return List.generate(maps.length, (index) {
       return Attendance.fromMap(maps[index]);
     });
@@ -109,12 +110,12 @@ class DatabaseHelper {
     );
   }
 
-  // New function to convert student IDs string to a List<String>
+  // Convert student IDs string to a List<String>
   List<String> convertStringToList(String studentIds) {
     return studentIds.split(',').map((id) => id.trim()).toList();
   }
 
-  // New function to convert List<String> to a comma-separated string
+  // Convert List<String> to a comma-separated string
   String convertListToString(List<String> studentIds) {
     return studentIds.join(',');
   }
@@ -150,11 +151,9 @@ class DatabaseHelper {
     });
   }
 
-  // New method to get daily attendance by attendance ID
   Future<List<DailyAttendance>> getDailyAttendanceByAttendanceId(
       int attendanceId) async {
     final db = await database;
-
     final List<Map<String, dynamic>> maps = await db.query(
       'daily_attendance',
       where: 'attendanceId = ?',
@@ -166,10 +165,9 @@ class DatabaseHelper {
     });
   }
 
-  // New method to get student name by student ID
+  // Get student name by student ID
   Future<String> getStudentNameById(String studentId) async {
     final db = await database;
-
     final List<Map<String, dynamic>> maps = await db.query(
       'students',
       where: 'studentId = ?',
@@ -177,13 +175,13 @@ class DatabaseHelper {
     );
 
     if (maps.isNotEmpty) {
-      return maps.first['name']; // Adjust based on your column name
+      return maps.first['name'];
     } else {
-      throw Exception('Student not found');
+      return 'Unknown'; // Return 'Unknown' if student is not found
     }
   }
 
-  // Method to get students by attendance ID
+  // Get students based on attendance ID
   Future<List<Student>> getStudentsByAttendanceId(int attendanceId) async {
     final db = await database;
 
@@ -198,10 +196,9 @@ class DatabaseHelper {
       throw Exception('Attendance not found');
     }
 
-    // Extract student IDs from the attendance
+    // Extract student IDs from the attendance record
     String studentIdsString = attendanceResult.first['studentIds'];
-    List<String> studentIds =
-        studentIdsString.split(',').map((id) => id.trim()).toList();
+    List<String> studentIds = convertStringToList(studentIdsString);
 
     // Fetch the students whose IDs are in the attendance
     final List<Map<String, dynamic>> studentResults = await db.query(
@@ -210,13 +207,24 @@ class DatabaseHelper {
       whereArgs: studentIds,
     );
 
-    if (studentResults.isEmpty) {
-      throw Exception('No students found for this attendance');
-    }
-
-    // Convert the results to a list of Student objects
     return List.generate(studentResults.length, (index) {
       return Student.fromMap(studentResults[index]);
     });
+  }
+
+  // Get daily attendance records along with student names
+  Future<List<Map<String, dynamic>>> getDailyAttendanceWithNamesByAttendanceId(
+      int attendanceId) async {
+    final db = await database;
+
+    // Join daily_attendance with students to get student names
+    final List<Map<String, dynamic>> maps = await db.rawQuery('''
+      SELECT d.id, d.attendanceId, d.studentId, d.studentName, d.isPresent, d.date, s.name
+      FROM daily_attendance d
+      JOIN students s ON d.studentId = s.studentId
+      WHERE d.attendanceId = ?
+    ''', [attendanceId]);
+
+    return maps;
   }
 }

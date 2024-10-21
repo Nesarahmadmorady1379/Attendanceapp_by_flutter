@@ -4,6 +4,7 @@ import 'package:attendanceapp/Screens/About_Screen.dart';
 import 'package:attendanceapp/Screens/Department_Screen.dart';
 import 'package:attendanceapp/Screens/settingsFolder/Setting_Screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // Import the Department model
 
 class Homepage extends StatefulWidget {
@@ -26,7 +27,10 @@ class _HomepageState extends State<Homepage> {
   }
 
   void getFacultyname() async {
-    // Use SharedPreferences or keep it as is for faculty name.
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      Facultyname = prefs.getString('facultyName') ?? '';
+    });
   }
 
   // Get departments from SQLite

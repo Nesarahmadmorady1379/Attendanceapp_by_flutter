@@ -22,7 +22,7 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
   final attendanceDbHelper = attendance_db.DatabaseHelper();
   final studentDbHelper = student_db.DatabaseHelper();
   List<Student> studentsForAttendance = [];
-  String currentDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  String? currentDate; // Change to nullable String
   Map<String, bool> attendanceStatus =
       {}; // Keep track of attendance for each student
 
@@ -73,15 +73,15 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
   }
 
   Future<void> _saveAttendance() async {
-    // Check if the selected date is today's date
-    if (currentDate != DateFormat('yyyy-MM-dd').format(DateTime.now())) {
+    // Check if the user has picked a date
+    if (currentDate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Please choose the current date.")),
+        SnackBar(content: Text("Please choose an attendance date.")),
       );
-      return; // Exit the function if the date is not today's date
+      return; // Exit the function if no date is chosen
     }
 
-    // Ensure attendanceId is not null
+    // Ensure that students are not null
     if (widget.attendance.id == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Attendance ID is null!")),
@@ -96,26 +96,28 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
         continue; // Skip if student ID is null
       }
 
+      // Fetch student name
+      String studentName = student.name; // Use the student object
+
       DailyAttendance dailyAttendance = DailyAttendance(
         attendanceId: widget.attendance.id!, // Ensure this is not null
         studentId: student.studentId,
+        studentName: studentName, // Save the student name
         isPresent: attendanceStatus[student.studentId] ?? false,
-        date: currentDate,
+        date: currentDate!,
       );
 
-      // Debugging: Print the attendance record being saved
-      print(
-          'Saving attendance for Student ID: ${student.studentId}, Present: ${dailyAttendance.isPresent}, Date: ${dailyAttendance.date}');
-
       await attendanceDbHelper.insertDailyAttendance(dailyAttendance);
+      print(
+          'Saved Attendance - Student ID: ${student.studentId}, Name: $studentName, Present: ${dailyAttendance.isPresent}, Date: ${dailyAttendance.date}');
     }
 
     // Fetch and print saved records for verification
     List<DailyAttendance> savedAttendance = await attendanceDbHelper
-        .getDailyAttendanceByDate(widget.attendance.id!, currentDate);
+        .getDailyAttendanceByDate(widget.attendance.id!, currentDate!);
     for (var record in savedAttendance) {
       print(
-          'Saved Attendance - Student ID: ${record.studentId}, Present: ${record.isPresent}, Date: ${record.date}');
+          'Saved Attendance - Student ID: ${record.studentId}, Name: ${record.studentName}, Present: ${record.isPresent}, Date: ${record.date}');
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -140,7 +142,8 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
               child: Text('Pick Attendance Date'),
             ),
           ),
-          Text('Selected Date: $currentDate'),
+          Text(
+              'Selected Date: ${currentDate ?? 'Not selected'}'), // Display if date is not selected
 
           Expanded(
             child: ListView.builder(

@@ -21,25 +21,35 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
   @override
   void initState() {
     super.initState();
-    _loadAttendanceData(); // Call your method here
+    _loadAttendanceData(); // Load attendance data when the page initializes
   }
 
   // Load attendance data from the database
   void _loadAttendanceData() async {
-    final attendanceDbHelper = DatabaseHelper(); // Create instance directly
+    final attendanceDbHelper = DatabaseHelper();
 
-    // Fetch the attendance records based on attendance ID
+    // Fetch attendance records based on the attendance ID
     List<DailyAttendance> attendanceRecords = await attendanceDbHelper
         .getDailyAttendanceByAttendanceId(widget.attendance.id!);
 
-    // Iterate over the fetched attendance records
+    print("Attendance Records: $attendanceRecords"); // Log fetched records
+
+    // Initialize a set to store unique student IDs
+    Set<String> uniqueStudentIds = {};
+
+    // Iterate over the fetched attendance records to group attendance by student
     for (var record in attendanceRecords) {
       String studentId = record.studentId;
 
-      // Initialize student data if not already present
+      // Add unique student IDs to the set
+      uniqueStudentIds.add(studentId);
+
+      // Initialize student data if not already present in the groupedAttendance map
       if (!groupedAttendance.containsKey(studentId)) {
         groupedAttendance[studentId] = {
-          'name': '', // Placeholder for student name
+          'name': record.studentName.isNotEmpty
+              ? record.studentName
+              : 'Unknown', // Use student name if available
           'id': studentId,
           'attendance': {},
           'presentDays': 0,
@@ -47,10 +57,11 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
         };
       }
 
-      // Update attendance data for the student
+      // Update attendance data for the student for the specific date
       groupedAttendance[studentId]!['attendance'][record.date] =
           record.isPresent;
 
+      // Count present and absent days for each student
       if (record.isPresent) {
         groupedAttendance[studentId]!['presentDays']++;
       } else {
@@ -63,18 +74,13 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
       }
     }
 
-    // Retrieve student names using their IDs and update the groupedAttendance map
-    for (var studentId in groupedAttendance.keys) {
-      // Fetch student names by ID
-      String studentName =
-          await attendanceDbHelper.getStudentNameById(studentId);
-      groupedAttendance[studentId]!['name'] = studentName;
-    }
-
-    // Update the state with grouped attendance data
+    // Update the state to refresh the UI with the loaded attendance data
     setState(() {
       attendanceData = groupedAttendance.values.toList();
     });
+
+    // Log attendance data after state update
+    print("Attendance Data: $attendanceData");
   }
 
   @override
@@ -89,24 +95,63 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 columns: [
-                  DataColumn(label: Text('Name')),
-                  DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('Name')), // Column for student names
+                  DataColumn(label: Text('ID')), // Column for student IDs
                   ...dates
                       .map((date) => DataColumn(label: Text(date)))
-                      .toList(),
-                  DataColumn(label: Text('Present Days')),
-                  DataColumn(label: Text('Absent Days')),
+                      .toList(), // Columns for attendance dates
+                  DataColumn(
+                      label: Text('Present Days')), // Column for present days
+                  DataColumn(
+                      label: Text('Absent Days')), // Column for absent days
                 ],
                 rows: attendanceData.map((student) {
                   return DataRow(cells: [
-                    DataCell(Text(student['name'] ?? '')),
-                    DataCell(Text(student['id'] ?? '')),
+                    DataCell(Text(
+                        student['name'] ?? 'Unknown')), // Show student name
+                    DataCell(Text(student['id'] ?? '')), // Show student ID
                     ...dates.map<DataCell>((date) {
                       bool? isPresent = student['attendance'][date];
-                      return DataCell(Text(isPresent == true ? '✓' : 'x'));
+                      return DataCell(
+                        RichText(
+                          text: TextSpan(
+                            children: [
+                              TextSpan(
+                                // text: isPresent == true
+                                //     ? '✓'
+                                //     : 'x', // First symbol
+                                style: TextStyle(
+                                  color: isPresent == true
+                                      ? Colors.black
+                                      : Colors
+                                          .red, // Black if present, red if absent
+                                  fontSize:
+                                      18, // Optional: Adjust the font size
+                                ),
+                              ),
+                              TextSpan(
+                                text: isPresent == false
+                                    ? ' x'
+                                    : ' ✓', // Second symbol (opposite color)
+                                style: TextStyle(
+                                  color: isPresent == false
+                                      ? Colors.red
+                                      : Colors
+                                          .black, // Red if present, black if absent
+                                  fontSize:
+                                      18, // Optional: Adjust the font size
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                      // Mark absent
                     }).toList(),
-                    DataCell(Text(student['presentDays'].toString())),
-                    DataCell(Text(student['absentDays'].toString())),
+                    DataCell(Text(
+                        student['presentDays'].toString())), // Present days
+                    DataCell(
+                        Text(student['absentDays'].toString())), // Absent days
                   ]);
                 }).toList(),
               ),
