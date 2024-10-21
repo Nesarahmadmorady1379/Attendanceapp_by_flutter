@@ -86,7 +86,7 @@ class _AttendanceOverviewPageState extends State<AttendancePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.departmentName} Attendances'),
+        title: Text('${widget.departmentName} attendances'),
       ),
       body: ListView.builder(
         itemCount: attendances.length,
@@ -107,15 +107,15 @@ class _AttendanceOverviewPageState extends State<AttendancePage> {
                   // Updated to parse the custom date format
                   Text(
                     DateFormat.yMd().format(
-                      DateFormat('yyyy/MM/dd').parse(attendance.startDate),
+                      DateFormat('yyyy-MM-dd').parse(attendance.startDate),
                     ),
                   ),
-                  SizedBox(width: 10),
                   Text(
                     DateFormat.yMd().format(
-                      DateFormat('yyyy/MM/dd').parse(attendance.endDate),
+                      DateFormat('yyyy-MM-dd').parse(attendance.endDate),
                     ),
                   ),
+
                   IconButton(
                     icon: Icon(Icons.delete),
                     onPressed: () {

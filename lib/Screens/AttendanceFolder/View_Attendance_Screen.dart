@@ -1,12 +1,10 @@
-import 'dart:convert';
-
+import 'package:attendanceapp/Databasehelpers/Attendancedatabasehelper.dart';
 import 'package:attendanceapp/Moldels/Attendancemodel.dart';
+import 'package:attendanceapp/Moldels/Dalyattendancemodle.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-// Make sure to import your Attendance model
 
 class ViewAttendancePage extends StatefulWidget {
-  final Attendance attendance; // Change to Attendance
+  final Attendance attendance;
 
   const ViewAttendancePage({Key? key, required this.attendance})
       : super(key: key);
@@ -23,61 +21,59 @@ class _ViewAttendancePageState extends State<ViewAttendancePage> {
   @override
   void initState() {
     super.initState();
-    _loadAttendanceData();
+    _loadAttendanceData(); // Call your method here
   }
 
-  // Load attendance data from SharedPreferences
+  // Load attendance data from the database
   void _loadAttendanceData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final attendanceDbHelper = DatabaseHelper(); // Create instance directly
 
-    // Use the properties of the Attendance object
-    String attendanceKeyPrefix =
-        'attendance_${widget.attendance.department}_${widget.attendance.semester}_${widget.attendance.subject}';
+    // Fetch the attendance records based on attendance ID
+    List<DailyAttendance> attendanceRecords = await attendanceDbHelper
+        .getDailyAttendanceByAttendanceId(widget.attendance.id!);
 
-    Set<String> allKeys = prefs.getKeys();
-    List<String> attendanceKeys =
-        allKeys.where((key) => key.startsWith(attendanceKeyPrefix)).toList();
+    // Iterate over the fetched attendance records
+    for (var record in attendanceRecords) {
+      String studentId = record.studentId;
 
-    for (String key in attendanceKeys) {
-      List<String>? storedData = prefs.getStringList(key);
+      // Initialize student data if not already present
+      if (!groupedAttendance.containsKey(studentId)) {
+        groupedAttendance[studentId] = {
+          'name': '', // Placeholder for student name
+          'id': studentId,
+          'attendance': {},
+          'presentDays': 0,
+          'absentDays': 0,
+        };
+      }
 
-      if (storedData != null) {
-        for (String jsonString in storedData) {
-          Map<String, dynamic> entry = jsonDecode(jsonString);
-          String studentId = entry['id'];
+      // Update attendance data for the student
+      groupedAttendance[studentId]!['attendance'][record.date] =
+          record.isPresent;
 
-          if (!groupedAttendance.containsKey(studentId)) {
-            groupedAttendance[studentId] = {
-              'name': entry['name'],
-              'id': studentId,
-              'attendance': {},
-              'presentDays': 0,
-              'absentDays': 0
-            };
-          }
+      if (record.isPresent) {
+        groupedAttendance[studentId]!['presentDays']++;
+      } else {
+        groupedAttendance[studentId]!['absentDays']++;
+      }
 
-          String? date = entry['date'];
-          if (date != null && date is String) {
-            groupedAttendance[studentId]!['attendance'][date] =
-                entry['isPresent'];
-
-            if (entry['isPresent'] == true) {
-              groupedAttendance[studentId]!['presentDays']++;
-            } else {
-              groupedAttendance[studentId]!['absentDays']++;
-            }
-
-            if (!dates.contains(date)) {
-              dates.add(date);
-            }
-          }
-        }
+      // Add the date to the dates list if it doesn't exist already
+      if (!dates.contains(record.date)) {
+        dates.add(record.date);
       }
     }
 
+    // Retrieve student names using their IDs and update the groupedAttendance map
+    for (var studentId in groupedAttendance.keys) {
+      // Fetch student names by ID
+      String studentName =
+          await attendanceDbHelper.getStudentNameById(studentId);
+      groupedAttendance[studentId]!['name'] = studentName;
+    }
+
+    // Update the state with grouped attendance data
     setState(() {
-      attendanceData =
-          groupedAttendance.values.toList(); // Ensure this line is included
+      attendanceData = groupedAttendance.values.toList();
     });
   }
 

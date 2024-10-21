@@ -57,6 +57,9 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
     setState(() {
       students = loadedStudents;
       filteredStudents = loadedStudents; // Initialize filtered students
+      selectedStudentIds = loadedStudents
+          .map((student) => student.studentId)
+          .toList(); // Initialize with all student IDs
     });
   }
 
@@ -64,6 +67,9 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
     filteredStudents = students
         .where((student) => student.semester == selectedSemester)
         .toList();
+    // Update selectedStudentIds based on filtered students
+    selectedStudentIds =
+        filteredStudents.map((student) => student.studentId).toList();
     setState(() {});
   }
 
@@ -180,19 +186,6 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
                           subtitle: Text(
                             'ID: ${student.studentId} | Semester: ${student.semester}',
                           ),
-                          trailing: Checkbox(
-                            value:
-                                selectedStudentIds.contains(student.studentId),
-                            onChanged: (bool? value) {
-                              setState(() {
-                                if (value == true) {
-                                  selectedStudentIds.add(student.studentId);
-                                } else {
-                                  selectedStudentIds.remove(student.studentId);
-                                }
-                              });
-                            },
-                          ),
                         ),
                       ),
                     );
@@ -213,7 +206,7 @@ class _AddAttendancePageState extends State<AddAttendancePage> {
                       startDate: startDate,
                       endDate: endDate,
                       studentIds:
-                          selectedStudentIds, // Save selected student IDs
+                          selectedStudentIds, // Store filtered student IDs
                     );
 
                     await attendanceDbHelper.insertAttendance(attendance);
