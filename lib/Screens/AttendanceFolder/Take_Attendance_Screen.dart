@@ -91,12 +91,6 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
 
     // Save attendance for each student
     for (var student in studentsForAttendance) {
-      if (student.studentId == null) {
-        print("Student ID is null for a student!"); // Debugging line
-        continue; // Skip if student ID is null
-      }
-
-      // Fetch student name
       String studentName = student.name; // Use the student object
 
       DailyAttendance dailyAttendance = DailyAttendance(
