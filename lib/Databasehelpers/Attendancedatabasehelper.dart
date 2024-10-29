@@ -71,21 +71,37 @@ class DatabaseHelper {
     );
   }
 
-  // Attendance table methods
-
+//isert attendance
   Future<int> insertAttendance(Attendance attendance) async {
     final db = await database;
     return await db.insert('attendances', attendance.toMap());
   }
 
+//get attendance
   Future<List<Attendance>> getAttendances() async {
     final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('attendances');
+    final List<Map<String, dynamic>> maps = await db.query(
+      'attendances',
+    );
     return List.generate(maps.length, (index) {
       return Attendance.fromMap(maps[index]);
     });
   }
 
+  //geting attendance by department
+  Future<List<Attendance>> getAttendancesbydepartment(String department) async {
+    final db = await database;
+    final List<Map<String, dynamic>> maps = await db.query(
+      'attendances',
+      where: 'department = ?',
+      whereArgs: [department],
+    );
+    return List.generate(maps.length, (index) {
+      return Attendance.fromMap(maps[index]);
+    });
+  }
+
+//get attendance byid
   Future<Attendance> getAttendanceById(int id) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -101,6 +117,7 @@ class DatabaseHelper {
     }
   }
 
+//delet attendance
   Future<int> deleteAttendance(int id) async {
     final db = await database;
     return await db.delete(
@@ -151,6 +168,7 @@ class DatabaseHelper {
     });
   }
 
+//daily attendance
   Future<List<DailyAttendance>> getDailyAttendanceByAttendanceId(
       int attendanceId) async {
     final db = await database;

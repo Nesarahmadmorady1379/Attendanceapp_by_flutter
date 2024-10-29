@@ -102,16 +102,6 @@ class _TakeAttendancePageState extends State<TakeAttendancePage> {
       );
 
       await attendanceDbHelper.insertDailyAttendance(dailyAttendance);
-      print(
-          'Saved Attendance - Student ID: ${student.studentId}, Name: $studentName, Present: ${dailyAttendance.isPresent}, Date: ${dailyAttendance.date}');
-    }
-
-    // Fetch and print saved records for verification
-    List<DailyAttendance> savedAttendance = await attendanceDbHelper
-        .getDailyAttendanceByDate(widget.attendance.id!, currentDate!);
-    for (var record in savedAttendance) {
-      print(
-          'Saved Attendance - Student ID: ${record.studentId}, Name: ${record.studentName}, Present: ${record.isPresent}, Date: ${record.date}');
     }
 
     ScaffoldMessenger.of(context).showSnackBar(

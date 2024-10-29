@@ -1,72 +1,54 @@
+import 'package:attendanceapp/Providers/Fontsizeprovider.dart';
+import 'package:attendanceapp/Providers/Theamnotifire.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class GeneralSettingScreen extends StatefulWidget {
+class GeneralSettingScreen extends ConsumerStatefulWidget {
   @override
   _GeneralSettingScrennState createState() => _GeneralSettingScrennState();
 }
 
-class _GeneralSettingScrennState extends State<GeneralSettingScreen> {
-  bool isDarkMode = false;
+class _GeneralSettingScrennState extends ConsumerState<GeneralSettingScreen> {
   double fontSize = 14;
   String language = 'English';
 
-  _toggleDarkMode() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      isDarkMode = !isDarkMode;
-      prefs.setBool('darkMode', isDarkMode);
-    });
-  }
-
-  _changeFontSize(double value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    fontSize = value;
-    await prefs.setDouble('fontSize', fontSize);
-    setState(() {});
-  }
-
-  _changeLanguage(String newLanguage) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    language = newLanguage;
-    await prefs.setString('language', language);
-    setState(() {});
-  }
-
-  _getCurrentDarkMode() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    setState(() {
-      bool? temp = pref.getBool("darkMode");
-      isDarkMode = temp ?? false;
-    });
-  }
-
-  _getCurrentFontSize() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    setState(() {
-      double? temp = pref.getDouble("fontSize");
-      fontSize = temp ?? 12;
-    });
-  }
-
-  _getCurrentLangauage() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    setState(() {
-      String? temp = pref.getString("language");
-      language = temp ?? language;
-    });
-  }
-
   @override
   void initState() {
-    _getCurrentDarkMode();
-    _getCurrentFontSize();
-    _getCurrentLangauage();
     super.initState();
+    _loadSettings();
+  }
+
+  Future<void> _loadSettings() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    double savedFontSize = prefs.getDouble('fontSize') ?? 14;
+    String savedLanguage = prefs.getString('language') ?? 'English';
+
+    setState(() {
+      fontSize = savedFontSize;
+      language = savedLanguage;
+    });
+  }
+
+  void _changeFontSize(double value) async {
+    // ref.read(fontSizeProvider.notifier).setFontSize(value);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setDouble('fontSize', value);
+  }
+
+  void _changeLanguage(String newLanguage) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      language = newLanguage;
+    });
+    await prefs.setString('language', language);
   }
 
   @override
   Widget build(BuildContext context) {
+    bool isDarkMode = ref.watch(themeProvider) == ThemeMode.dark;
+    double fontSize = ref.watch(fontSizeProvider); // Watch the theme state
+
     return Scaffold(
       appBar: AppBar(title: Text('General Settings')),
       body: Padding(
@@ -75,14 +57,11 @@ class _GeneralSettingScrennState extends State<GeneralSettingScreen> {
           children: [
             SwitchListTile(
               title: Text('Dark Mode'),
-              value: isDarkMode,
-              onChanged: (value) async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                isDarkMode = !isDarkMode;
-                await prefs.setBool('darkMode', isDarkMode);
-                setState(() {
-                  print(isDarkMode);
-                });
+              value: isDarkMode, // Use Riverpod state for dark mode
+              onChanged: (value) {
+                ref
+                    .read(themeProvider.notifier)
+                    .toggleTheme(); // Toggle theme using provider
               },
             ),
             ListTile(
@@ -91,8 +70,11 @@ class _GeneralSettingScrennState extends State<GeneralSettingScreen> {
                 divisions: 3,
                 value: fontSize,
                 min: 12,
-                max: 24,
-                onChanged: (value) => _changeFontSize(value),
+                max: 34,
+                onChanged: (value) {
+                  // Update font size using FontSizeNotifier provider
+                  ref.read(fontSizeProvider.notifier).setFontSize(value);
+                },
               ),
             ),
             ListTile(

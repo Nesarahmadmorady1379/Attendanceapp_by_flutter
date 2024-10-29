@@ -72,14 +72,10 @@ class _HomepageState extends State<Homepage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200],
       appBar: AppBar(
-        backgroundColor: Colors.blueAccent,
-        title: Text('Home page',
-            style: TextStyle(
-              fontSize: 26,
-              color: Colors.black,
-            )),
+        title: Text(
+          'Home page',
+        ),
         centerTitle: true,
       ),
       body: Center(
@@ -111,7 +107,6 @@ class _HomepageState extends State<Homepage> {
                             )),
                         Text(
                           'settings',
-                          style: TextStyle(color: Colors.black),
                         )
                       ],
                     ),
@@ -136,7 +131,6 @@ class _HomepageState extends State<Homepage> {
                             )),
                         Text(
                           'share',
-                          style: TextStyle(color: Colors.black),
                         )
                       ],
                     ),
@@ -161,7 +155,6 @@ class _HomepageState extends State<Homepage> {
                             )),
                         Text(
                           'email',
-                          style: TextStyle(color: Colors.black),
                         )
                       ],
                     ),
@@ -191,7 +184,6 @@ class _HomepageState extends State<Homepage> {
                             )),
                         Text(
                           'about',
-                          style: TextStyle(color: Colors.black),
                         ),
                       ],
                     ),

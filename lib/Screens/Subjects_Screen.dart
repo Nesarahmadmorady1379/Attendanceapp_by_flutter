@@ -58,7 +58,6 @@ class _SubjectsPageState extends State<SubjectsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.departmentName} Subjects'),
-        backgroundColor: Colors.blueAccent,
       ),
       body: ListView.builder(
         itemCount: subjects.length,

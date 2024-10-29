@@ -1,35 +1,31 @@
+import 'package:attendanceapp/Providers/Theamnotifire.dart';
 import 'package:attendanceapp/Screens/Hom_Screen.dart';
 import 'package:attendanceapp/Screens/Splash_Screen.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  // Get the stored values or set defaults
-  bool isDarkMode = prefs.getBool('darkMode') ?? false;
-  double fontSize = prefs.getDouble('fontSize') ?? 14;
-
-  runApp(MyApp(isDarkMode: isDarkMode, fontSize: fontSize));
+void main() {
+  runApp(
+    ProviderScope(
+      child: MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatelessWidget {
-  final bool isDarkMode;
-  final double fontSize;
-
-  const MyApp({Key? key, required this.isDarkMode, required this.fontSize})
-      : super(key: key);
-
+class MyApp extends ConsumerWidget {
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: isDarkMode ? ThemeData.dark() : ThemeData.light(),
+      title: 'Attendance App',
+      theme: ThemeData.light(), // Light theme
+      darkTheme: ThemeData.dark(), // Dark theme
+      themeMode: themeMode, // Use theme mode from provider
       routes: {
         '/': (context) => splashscreen(),
         '/home': (context) => Homepage(),
-      },
+      }, // Your home page
     );
   }
 }

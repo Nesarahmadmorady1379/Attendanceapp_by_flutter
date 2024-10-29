@@ -1,11 +1,13 @@
 import 'package:attendanceapp/Databasehelpers/Departmenthelper.dart';
 import 'package:attendanceapp/Moldels/Deartnebtmodel.dart';
+import 'package:attendanceapp/Providers/Fontsizeprovider.dart';
 import 'package:attendanceapp/Screens/AttendanceFolder/Attendance_Screen.dart';
 import 'package:attendanceapp/Screens/Subjects_Screen.dart';
 import 'package:attendanceapp/Screens/studentFolder/Students_Screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class Departmentpage extends StatefulWidget {
+class Departmentpage extends ConsumerStatefulWidget {
   final String departmentName;
 
   const Departmentpage({Key? key, required this.departmentName})
@@ -15,7 +17,7 @@ class Departmentpage extends StatefulWidget {
   _DepartmentpageState createState() => _DepartmentpageState();
 }
 
-class _DepartmentpageState extends State<Departmentpage> {
+class _DepartmentpageState extends ConsumerState<Departmentpage> {
   Department? department; // Initialize as null instead of using 'late'
   final DatabaseHelper dbHelper = DatabaseHelper();
 
@@ -36,10 +38,10 @@ class _DepartmentpageState extends State<Departmentpage> {
 
   @override
   Widget build(BuildContext context) {
+    double Fontsize = ref.watch(fontSizeProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.departmentName} Department'),
-        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -47,9 +49,9 @@ class _DepartmentpageState extends State<Departmentpage> {
           child: Column(
             children: [
               const SizedBox(height: 80),
-              const Text(
+              Text(
                 'Choose what you want to see',
-                style: TextStyle(fontSize: 25),
+                style: TextStyle(fontSize: Fontsize),
               ),
               const SizedBox(height: 50),
               if (department != null) ...[

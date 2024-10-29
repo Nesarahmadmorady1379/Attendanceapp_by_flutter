@@ -106,7 +106,6 @@ class _SettingpageState extends State<Settingpage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
-        backgroundColor: Colors.blueAccent,
       ),
       body: Padding(
         padding: const EdgeInsets.all(10.0),

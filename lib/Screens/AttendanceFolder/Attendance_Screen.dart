@@ -29,7 +29,8 @@ class _AttendanceOverviewPageState extends State<AttendancePage> {
 
   // Load attendance data from the database
   void _loadAttendances() async {
-    attendances = await dbHelper.getAttendances();
+    attendances =
+        await dbHelper.getAttendancesbydepartment(widget.departmentName);
     setState(() {});
   }
 

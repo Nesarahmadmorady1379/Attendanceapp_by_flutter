@@ -49,7 +49,6 @@ class _StudentPageState extends State<StudentPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('${widget.departmentName} Students'),
-        backgroundColor: Colors.blueAccent,
       ),
       body: students.isEmpty
           ? Center(child: Text('No students added yet'))
