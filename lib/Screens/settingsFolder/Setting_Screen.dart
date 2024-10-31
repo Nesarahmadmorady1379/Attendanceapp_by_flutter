@@ -1,15 +1,18 @@
+import 'package:attendanceapp/Providers/Facultynameprovider.dart';
 import 'package:attendanceapp/Screens/settingsFolder/General_Setting_Screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class Settingpage extends StatefulWidget {
+class Settingpage extends ConsumerStatefulWidget {
   const Settingpage({Key? key}) : super(key: key);
 
   @override
   _SettingpageState createState() => _SettingpageState();
 }
 
-class _SettingpageState extends State<Settingpage> {
+class _SettingpageState extends ConsumerState<Settingpage> {
+  //datatype of the setting page
   TextEditingController f_namecontrolar = TextEditingController();
   TextEditingController f_locationcontrolar = TextEditingController();
   TextEditingController t_namecontrolar = TextEditingController();
@@ -32,7 +35,7 @@ class _SettingpageState extends State<Settingpage> {
     if (name.isEmpty || location.isEmpty) {
       showError_dialog('All the fields are required');
     } else {
-      await prefs.setString('facultyName', f_namecontrolar.text);
+      await ref.read(facultynameprovider.notifier).setFacultyname(name);
       await prefs.setString('facultyLocation', f_locationcontrolar.text);
       f_namecontrolar.clear();
       f_locationcontrolar.clear();

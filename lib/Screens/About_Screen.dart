@@ -1,15 +1,18 @@
+import 'package:attendanceapp/Providers/Fontsizeprovider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class About_Screen extends StatefulWidget {
+class About_Screen extends ConsumerStatefulWidget {
   const About_Screen({Key? key}) : super(key: key);
 
   @override
   _About_ScreenState createState() => _About_ScreenState();
 }
 
-class _About_ScreenState extends State<About_Screen> {
+class _About_ScreenState extends ConsumerState<About_Screen> {
   @override
   Widget build(BuildContext context) {
+    double Fontsize = ref.watch(fontSizeProvider);
     return Scaffold(
       appBar: AppBar(
         title: Text('About page'),
@@ -65,6 +68,7 @@ class _About_ScreenState extends State<About_Screen> {
       during an internship program at the WASSA organization, supported by 
       UNHCR and other donors. Special thanks to them for their support.''',
                     textAlign: TextAlign.justify, // Justifies the text
+                    style: TextStyle(fontSize: Fontsize),
                   ),
                   SizedBox(
                     height: 5,
@@ -76,15 +80,15 @@ class _About_ScreenState extends State<About_Screen> {
                     height: 5,
                   ),
                   Text(
-                    '''This is an Attendance Management System developed for universities 
+                      '''This is an Attendance Management System developed for universities 
       and can be used in all faculties. It allows adding students not only 
       by typing them manually but also by importing CSV files. The app 
       provides a view page that shows a real attendance list, where absentees 
       have a cross mark in their cell and attendees have a checkmark. It also 
       counts the days students were absent or present and displays them in the 
       last two columns.''',
-                    textAlign: TextAlign.justify, // Justifies the text
-                  ),
+                      textAlign: TextAlign.justify, // Justifies the text
+                      style: TextStyle(fontSize: Fontsize)),
                 ],
               )
             ],

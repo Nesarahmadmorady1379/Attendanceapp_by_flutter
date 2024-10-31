@@ -1,36 +1,29 @@
 import 'package:attendanceapp/Databasehelpers/Departmenthelper.dart';
 import 'package:attendanceapp/Moldels/Deartnebtmodel.dart';
+import 'package:attendanceapp/Providers/Facultynameprovider.dart';
 import 'package:attendanceapp/Screens/About_Screen.dart';
 import 'package:attendanceapp/Screens/Department_Screen.dart';
 import 'package:attendanceapp/Screens/settingsFolder/Setting_Screen.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 // Import the Department model
 
-class Homepage extends StatefulWidget {
+class Homepage extends ConsumerStatefulWidget {
   const Homepage({Key? key}) : super(key: key);
 
   @override
   _HomepageState createState() => _HomepageState();
 }
 
-class _HomepageState extends State<Homepage> {
-  String Facultyname = '';
+class _HomepageState extends ConsumerState<Homepage> {
   List<Department> departments = [];
   DatabaseHelper dbHelper = DatabaseHelper(); // Instantiate the DatabaseHelper
 
   @override
   void initState() {
     super.initState();
-    getFacultyname();
-    getDepartments();
-  }
 
-  void getFacultyname() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      Facultyname = prefs.getString('facultyName') ?? '';
-    });
+    getDepartments();
   }
 
   // Get departments from SQLite
@@ -71,6 +64,7 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
+    String Facultyname = ref.watch(facultynameprovider);
     return Scaffold(
       appBar: AppBar(
         title: Text(

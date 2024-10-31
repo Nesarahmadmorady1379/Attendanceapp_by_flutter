@@ -67,7 +67,8 @@ class _GeneralSettingScrennState extends ConsumerState<GeneralSettingScreen> {
             ListTile(
               title: Text('Font Size'),
               subtitle: Slider(
-                divisions: 3,
+                
+                divisions: 5,
                 value: fontSize,
                 min: 12,
                 max: 34,
